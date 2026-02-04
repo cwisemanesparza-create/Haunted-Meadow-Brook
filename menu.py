@@ -121,7 +121,10 @@ def main():
             if action == GameState.START:
                 print("Start game")
             elif action == GameState.SETTINGS:
-                print("Settings menu")
+                 result = settings_screen(screen)
+            if result == GameState.QUIT:
+                pygame.quit()
+                return
             elif action == GameState.ACHIEVEMENTS:
                 print("Achievements")
             elif action == GameState.ABOUT:
@@ -136,3 +139,90 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+class Slider:
+    def __init__(self, pos, size, label, value=0.5):
+        self.x, self.y = pos
+        self.width, self.height = size
+        self.label = label
+        self.value = value
+        self.dragging = False
+
+        self.track_rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.knob_radius = self.height // 2 + 4
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.track_rect.collidepoint(event.pos):
+                self.dragging = True
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.dragging = False
+        if event.type == pygame.MOUSEMOTION and self.dragging:
+            rel_x = max(self.x, min(event.pos[0], self.x + self.width))
+            self.value = (rel_x - self.x) / self.width
+
+    def draw(self, screen):
+        # label
+        font = pygame.font.Font(None, 28)
+        label_surf = font.render(self.label, True, WHITE)
+        screen.blit(label_surf, (self.x, self.y - 30))
+
+        # track
+        pygame.draw.rect(screen, WHITE, self.track_rect, 2)
+
+        # knob
+        knob_x = self.x + int(self.value * self.width)
+        knob_y = self.y + self.height // 2
+        pygame.draw.circle(screen, WHITE, (knob_x, knob_y), self.knob_radius)
+
+        def settings_screen(screen):
+    clock = pygame.time.Clock()
+
+    # Audio table header
+    header_font = pygame.font.Font(None, 36)
+    header_surface = header_font.render("AUDIO SETTINGS", True, WHITE)
+    header_rect = pygame.Rect(200, 50, 400, 60)
+
+    # Sliders
+    master_slider = Slider((250, 180), (300, 8), "Master Volume", 0.8)
+    music_slider = Slider((250, 260), (300, 8), "Music Volume", 0.6)
+
+    back_btn = UIElement(
+        center_position=(400, 500),
+        text="Back",
+        font_size=28,
+        bg_rgb=BLACK,
+        text_rgb=WHITE,
+        action=GameState.TITLE,
+    )
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return GameState.QUIT
+
+            master_slider.handle_event(event)
+            music_slider.handle_event(event)
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                action = back_btn.update(pygame.mouse.get_pos(), True)
+                if action == GameState.TITLE:
+                    return GameState.TITLE
+
+        screen.fill(ORANGE)
+
+        # Draw audio table
+        pygame.draw.rect(screen, BLACK, header_rect)
+        screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
+
+        # Draw sliders
+        master_slider.draw(screen)
+        music_slider.draw(screen)
+
+        back_btn.update(pygame.mouse.get_pos())
+        back_btn.draw(screen)
+
+        pygame.display.flip()
+        clock.tick(60)
+

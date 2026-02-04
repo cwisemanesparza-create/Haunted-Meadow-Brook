@@ -62,20 +62,25 @@ class UIElement(Sprite):
         surface.blit(self.image, self.rect)
 
 class GameState(Enum):
+    TITLE = 0
+    START = 1
+    SETTINGS = 2
+    ACHIEVEMENTS = 3
+    ABOUT = 4
     QUIT = -1
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("Haunted Meadow Brook")
 
-    quit_btn = UIElement(
-        center_position=(400, 400),
-        text="Quit",
-        font_size=30,
-        bg_rgb=BLUE,
-        text_rgb=WHITE,
-        action=GameState.QUIT,
-    )
+    buttons = [
+        UIElement((400, 260), "Start", 32, BLUE, WHITE, GameState.START),
+        UIElement((400, 320), "Settings", 28, BLUE, WHITE, GameState.SETTINGS),
+        UIElement((400, 380), "Achievements", 28, BLUE, WHITE, GameState.ACHIEVEMENTS),
+        UIElement((400, 440), "About", 28, BLUE, WHITE, GameState.ABOUT),
+        UIElement((400, 500), "Quit", 28, BLUE, WHITE, GameState.QUIT),
+    ]
 
     while True:
         mouse_up = False
@@ -88,14 +93,24 @@ def main():
 
         screen.fill(ORANGE)
 
-        action = quit_btn.update(pygame.mouse.get_pos(), mouse_up)
-        if action == GameState.QUIT:
-            pygame.quit()
-            return
+        for button in buttons:
+            action = button.update(pygame.mouse.get_pos(), mouse_up)
 
-        quit_btn.draw(screen)
+            if action == GameState.START:
+                print("Start game")
+            elif action == GameState.SETTINGS:
+                print("Open settings menu")
+            elif action == GameState.ACHIEVEMENTS:
+                print("Open achievements")
+            elif action == GameState.ABOUT:
+                print("Open about screen")
+            elif action == GameState.QUIT:
+                pygame.quit()
+                return
+
+            button.draw(screen)
+
         pygame.display.flip()
 
 if __name__ == "__main__":
     main()
-

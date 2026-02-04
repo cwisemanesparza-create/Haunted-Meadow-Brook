@@ -15,14 +15,11 @@ ORANGE = (255, 140, 0)
 def create_surface_with_text(text, font_size, text_rgb, bg_rgb, padding=12):
     font = pygame.freetype.SysFont("Courier", font_size, bold=True)
     text_surface, _ = font.render(text, fgcolor=text_rgb)
-
     width = text_surface.get_width() + padding * 2
     height = text_surface.get_height() + padding * 2
-
     surface = pygame.Surface((width, height), pygame.SRCALPHA)
     surface.fill(bg_rgb)
     surface.blit(text_surface, (padding, padding))
-
     return surface.convert_alpha()
 
 # -----------------------------
@@ -33,10 +30,8 @@ class UIElement(Sprite):
         super().__init__()
         self.action = action
         self.mouse_over = False
-
         default_image = create_surface_with_text(text, font_size, text_rgb, bg_rgb)
         highlighted_image = create_surface_with_text(text, int(font_size*1.15), text_rgb, bg_rgb)
-
         self.images = [default_image, highlighted_image]
         self.rects = [
             default_image.get_rect(center=center_position),
@@ -77,9 +72,8 @@ class Slider:
         self.knob_radius = self.height // 2 + 4
 
     def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.track_rect.collidepoint(event.pos):
-                self.dragging = True
+        if event.type == pygame.MOUSEBUTTONDOWN and self.track_rect.collidepoint(event.pos):
+            self.dragging = True
         if event.type == pygame.MOUSEBUTTONUP:
             self.dragging = False
         if event.type == pygame.MOUSEMOTION and self.dragging:
@@ -110,14 +104,15 @@ class GameState(Enum):
 # Settings screen
 # -----------------------------
 def settings_screen(screen):
+    global MASTER_VOLUME, MUSIC_VOLUME
     clock = pygame.time.Clock()
 
     header_font = pygame.font.Font(None, 36)
     header_surface = header_font.render("AUDIO SETTINGS", True, WHITE)
     header_rect = pygame.Rect(200, 50, 400, 60)
 
-    master_slider = Slider((250, 180), (300, 8), "Master Volume", 0.8)
-    music_slider = Slider((250, 260), (300, 8), "Music Volume", 0.6)
+    master_slider = Slider((250, 180), (300, 8), "Master Volume", MASTER_VOLUME)
+    music_slider = Slider((250, 260), (300, 8), "Music Volume", MUSIC_VOLUME / MASTER_VOLUME if MASTER_VOLUME>0 else 0)
 
     back_btn = UIElement((400, 500), "Back", 28, BLACK, WHITE, GameState.TITLE)
 
@@ -127,20 +122,22 @@ def settings_screen(screen):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return GameState.QUIT
-
             master_slider.handle_event(event)
             music_slider.handle_event(event)
-
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_up = True
 
+        # Update volume in real-time
+        MASTER_VOLUME = master_slider.value
+        MUSIC_VOLUME = music_slider.value * MASTER_VOLUME
+        pygame.mixer.music.set_volume(MUSIC_VOLUME)
+
+        # Draw
         screen.fill(ORANGE)
         pygame.draw.rect(screen, BLACK, header_rect)
         screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
-
         master_slider.draw(screen)
         music_slider.draw(screen)
-
         action = back_btn.update(pygame.mouse.get_pos(), mouse_up)
         back_btn.draw(screen)
         if action == GameState.TITLE:
@@ -178,18 +175,17 @@ def main_menu_loop(screen):
 
         for button in buttons:
             action = button.update(pygame.mouse.get_pos(), mouse_up)
-
             if action == GameState.START:
-                print("Start game")  # Replace with actual game loop
+                print("Start game")  # replace with actual game loop
             elif action == GameState.SETTINGS:
                 result = settings_screen(screen)
                 if result == GameState.QUIT:
                     pygame.quit()
                     return GameState.QUIT
             elif action == GameState.ACHIEVEMENTS:
-                print("Achievements")  # Replace later
+                print("Achievements")
             elif action == GameState.ABOUT:
-                print("About screen")  # Replace later
+                print("About screen")
             elif action == GameState.QUIT:
                 pygame.quit()
                 return GameState.QUIT
@@ -201,10 +197,21 @@ def main_menu_loop(screen):
 # -----------------------------
 # Main function
 # -----------------------------
+MASTER_VOLUME = 0.8
+MUSIC_VOLUME = 0.6
+
 def main():
+    global MASTER_VOLUME, MUSIC_VOLUME
     pygame.init()
+    pygame.mixer.init()
+
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption("Haunted Meadow Brook")
+
+    # Load background music
+    pygame.mixer.music.load("background_music.mp3")  # put your file in the same folder
+    pygame.mixer.music.set_volume(MUSIC_VOLUME)
+    pygame.mixer.music.play(-1)
 
     result = main_menu_loop(screen)
     if result == GameState.QUIT:
@@ -212,4 +219,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

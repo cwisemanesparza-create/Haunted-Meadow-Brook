@@ -9,9 +9,17 @@ WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 ORANGE = (255, 140, 0)
 
-def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
+def create_surface_with_text(text, font_size, text_rgb, bg_rgb, padding=12):
     font = pygame.freetype.SysFont("Courier", font_size, bold=True)
-    surface, _ = font.render(text, fgcolor=text_rgb, bgcolor=bg_rgb)
+    text_surface, _ = font.render(text, fgcolor=text_rgb)
+
+    width = text_surface.get_width() + padding * 2
+    height = text_surface.get_height() + padding * 2
+
+    surface = pygame.Surface((width, height), pygame.SRCALPHA)
+    surface.fill(bg_rgb)
+    surface.blit(text_surface, (padding, padding))
+
     return surface.convert_alpha()
 
 class UIElement(Sprite):
@@ -30,7 +38,7 @@ class UIElement(Sprite):
 
         highlighted_image = create_surface_with_text(
             text=text,
-            font_size=int(font_size * 1.2),
+            font_size=int(font_size * 1.15),
             text_rgb=text_rgb,
             bg_rgb=bg_rgb
         )
@@ -62,7 +70,6 @@ class UIElement(Sprite):
         surface.blit(self.image, self.rect)
 
 class GameState(Enum):
-    TITLE = 0
     START = 1
     SETTINGS = 2
     ACHIEVEMENTS = 3
@@ -74,12 +81,23 @@ def main():
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption("Haunted Meadow Brook")
 
+    # Title text
+    title_surface = create_surface_with_text(
+        "HAUNTED MEADOW BROOK",
+        48,
+        WHITE,
+        ORANGE,
+        padding=20
+    )
+    title_rect = title_surface.get_rect(center=(400, 140))
+
+    # Buttons (bottom half)
     buttons = [
-        UIElement((400, 260), "Start", 32, BLUE, WHITE, GameState.START),
-        UIElement((400, 320), "Settings", 28, BLUE, WHITE, GameState.SETTINGS),
-        UIElement((400, 380), "Achievements", 28, BLUE, WHITE, GameState.ACHIEVEMENTS),
-        UIElement((400, 440), "About", 28, BLUE, WHITE, GameState.ABOUT),
-        UIElement((400, 500), "Quit", 28, BLUE, WHITE, GameState.QUIT),
+        UIElement((400, 300), "Start", 30, BLACK, WHITE, GameState.START),
+        UIElement((400, 360), "Settings", 26, BLACK, WHITE, GameState.SETTINGS),
+        UIElement((400, 420), "Achievements", 26, BLACK, WHITE, GameState.ACHIEVEMENTS),
+        UIElement((400, 480), "About", 26, BLACK, WHITE, GameState.ABOUT),
+        UIElement((400, 540), "Quit", 26, BLACK, WHITE, GameState.QUIT),
     ]
 
     while True:
@@ -93,17 +111,21 @@ def main():
 
         screen.fill(ORANGE)
 
+        # Draw title (top half)
+        screen.blit(title_surface, title_rect)
+
+        # Draw buttons (bottom half)
         for button in buttons:
             action = button.update(pygame.mouse.get_pos(), mouse_up)
 
             if action == GameState.START:
                 print("Start game")
             elif action == GameState.SETTINGS:
-                print("Open settings menu")
+                print("Settings menu")
             elif action == GameState.ACHIEVEMENTS:
-                print("Open achievements")
+                print("Achievements")
             elif action == GameState.ABOUT:
-                print("Open about screen")
+                print("About screen")
             elif action == GameState.QUIT:
                 pygame.quit()
                 return

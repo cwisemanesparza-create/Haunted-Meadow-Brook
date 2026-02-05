@@ -3,11 +3,10 @@ import pygame.freetype
 from pygame.sprite import Sprite
 from enum import Enum
 from pygame.rect import Rect
-from pygame.sprite import RenderUpdates
 
-#set width and height of window
-width = 800
-height = 600
+#set width and height of screen
+WIDTH = 900
+HEIGHT = 700
 
 # Colors
 BLACK = (0, 0, 0)
@@ -17,9 +16,9 @@ ORANGE = (255, 140, 0)
 
 #load grizzly mascot player photo
 player = pygame.image.load("photos\\grizzly_photos\\grizzly_mascot_pixel.png")
-player_rect = player.get_rect(center = (0, 0)) #player starts at (x, y)
+player_rect = player.get_rect(center = (500, 400)) #player starts at (x, y)
 player = pygame.transform.scale(player, (200, 250)) #player scale to size (x, y)
-vel = 10 #set velocity of player movement
+vel = 15 #set velocity of player movement
 
 def create_surface_with_text(text, font_size, text_rgb, bg_rgb, padding=12):
     font = pygame.freetype.SysFont("Courier", font_size, bold=True)
@@ -91,22 +90,9 @@ class GameState(Enum):
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((width, height))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Haunted Meadow Brook")
     action = GameState.MENU
-    
-    # Title text
-    title_surface = create_surface_with_text(
-        "HAUNTED MEADOW BROOK",
-        48,
-        WHITE,
-        ORANGE,
-        padding=20
-    )
-    title_rect = title_surface.get_rect(center=(400, 140))
-    
-    # Draw title (top half)
-    screen.blit(title_surface, title_rect)
 
     while True:
         if action == GameState.MENU:
@@ -135,11 +121,11 @@ def menu(screen):
 
     # Buttons (bottom half)
     buttons = [
-        UIElement((400, 300), "Start", 30, BLACK, WHITE, action=GameState.START),
-        UIElement((400, 360), "Settings", 26, BLACK, WHITE, GameState.SETTINGS),
-        UIElement((400, 420), "Achievements", 26, BLACK, WHITE, GameState.ACHIEVEMENTS),
-        UIElement((400, 480), "About", 26, BLACK, WHITE, GameState.ABOUT),
-        UIElement((400, 540), "Quit", 26, BLACK, WHITE, action=GameState.QUIT),
+        UIElement((WIDTH/2, 300), "Start", 30, BLACK, WHITE, GameState.START),
+        UIElement((WIDTH/2, 360), "Settings", 26, BLACK, WHITE, GameState.SETTINGS),
+        UIElement((WIDTH/2, 420), "Achievements", 26, BLACK, WHITE, GameState.ACHIEVEMENTS),
+        UIElement((WIDTH/2, 480), "About", 26, BLACK, WHITE, GameState.ABOUT),
+        UIElement((WIDTH/2, 540), "Quit", 26, BLACK, WHITE, GameState.QUIT),
     ]
     
     # Title text
@@ -150,7 +136,7 @@ def menu(screen):
         ORANGE,
         padding=20
     )
-    title_rect = title_surface.get_rect(center=(400, 140))
+    title_rect = title_surface.get_rect(center=(WIDTH/2, 140))
     
     while True:
         mouse_up = False
@@ -192,14 +178,6 @@ def menu(screen):
 
 
 def play_level(screen):
-    return_btn = UIElement(
-        center_position=(140, 570),
-        font_size=20,
-        bg_rgb=ORANGE,
-        text_rgb=WHITE,
-        text="Return to main menu",
-        action=GameState.MENU,
-    )
 
     #run game
     run = True
@@ -221,13 +199,13 @@ def play_level(screen):
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
             player_rect.y += vel
             
-        #keep player inside edges of window
-        if player_rect.right > width:
-            player_rect.right = width
+        #keep player inside edges of screen
+        if player_rect.right > WIDTH + 150:
+            player_rect.right = WIDTH + 150
         if player_rect.left < 0:
             player_rect.left = 0
-        if player_rect.bottom > height:
-            player_rect.bottom = height
+        if player_rect.bottom > HEIGHT + 225:
+            player_rect.bottom = HEIGHT + 225
         if player_rect.top < 0:
             player_rect.top = 0
         

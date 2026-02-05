@@ -4,17 +4,15 @@ from pygame.sprite import Sprite
 from enum import Enum
 import os
 
-# -----------------------------
 # Colors
-# -----------------------------
+
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 ORANGE = (255, 140, 0)
 
-# -----------------------------
 # Helper function
-# -----------------------------
+
 def create_surface_with_text(text, font_size, text_rgb, bg_rgb, padding=12):
     font = pygame.freetype.SysFont("Courier", font_size, bold=True)
     text_surface, _ = font.render(text, fgcolor=text_rgb)
@@ -25,9 +23,8 @@ def create_surface_with_text(text, font_size, text_rgb, bg_rgb, padding=12):
     surface.blit(text_surface, (padding, padding))
     return surface.convert_alpha()
 
-# -----------------------------
 # UI Button class
-# -----------------------------
+
 class UIElement(Sprite):
     def __init__(self, center_position, text, font_size, bg_rgb, text_rgb, action=None):
         super().__init__()
@@ -61,9 +58,8 @@ class UIElement(Sprite):
     def draw(self, surface):
         surface.blit(self.image, self.rect)
 
-# -----------------------------
 # Slider class
-# -----------------------------
+
 class Slider:
     def __init__(self, pos, size, label, value=0.5):
         self.x, self.y = pos
@@ -92,9 +88,8 @@ class Slider:
         knob_y = self.y + self.height // 2
         pygame.draw.circle(screen, WHITE, (knob_x, knob_y), self.knob_radius)
 
-# -----------------------------
 # Game states
-# -----------------------------
+
 class GameState(Enum):
     TITLE = 0
     START = 1
@@ -103,15 +98,13 @@ class GameState(Enum):
     ABOUT = 4
     QUIT = -1
 
-# -----------------------------
 # Global volume values
-# -----------------------------
+
 MASTER_VOLUME = 0.8
 MUSIC_VOLUME = 0.6
 
-# -----------------------------
 # Settings screen
-# -----------------------------
+
 def settings_screen(screen):
     global MASTER_VOLUME, MUSIC_VOLUME
     clock = pygame.time.Clock()
@@ -136,7 +129,7 @@ def settings_screen(screen):
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_up = True
 
-        # Update volume in real-time
+        # Update volume in real time
         MASTER_VOLUME = master_slider.value
         MUSIC_VOLUME = music_slider.value * MASTER_VOLUME
         pygame.mixer.music.set_volume(MUSIC_VOLUME)
@@ -156,9 +149,8 @@ def settings_screen(screen):
         pygame.display.flip()
         clock.tick(60)
 
-# -----------------------------
 # Main menu loop
-# -----------------------------
+
 def main_menu_loop(screen):
     title_surface = create_surface_with_text("HAUNTED MEADOW BROOK", 48, WHITE, ORANGE, padding=20)
     title_rect = title_surface.get_rect(center=(400, 140))
@@ -204,9 +196,8 @@ def main_menu_loop(screen):
 
         pygame.display.flip()
 
-# -----------------------------
 # Main function
-# -----------------------------
+
 def main():
     global MASTER_VOLUME, MUSIC_VOLUME
     pygame.init()

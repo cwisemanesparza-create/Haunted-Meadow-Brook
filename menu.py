@@ -2,8 +2,11 @@ import pygame
 import pygame.freetype
 from pygame.sprite import Sprite
 from enum import Enum
+import os
 
+# -----------------------------
 # Colors
+# -----------------------------
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
@@ -101,6 +104,12 @@ class GameState(Enum):
     QUIT = -1
 
 # -----------------------------
+# Global volume values
+# -----------------------------
+MASTER_VOLUME = 0.8
+MUSIC_VOLUME = 0.6
+
+# -----------------------------
 # Settings screen
 # -----------------------------
 def settings_screen(screen):
@@ -132,12 +141,13 @@ def settings_screen(screen):
         MUSIC_VOLUME = music_slider.value * MASTER_VOLUME
         pygame.mixer.music.set_volume(MUSIC_VOLUME)
 
-        # Draw
+        # Draw screen
         screen.fill(ORANGE)
         pygame.draw.rect(screen, BLACK, header_rect)
         screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
         master_slider.draw(screen)
         music_slider.draw(screen)
+
         action = back_btn.update(pygame.mouse.get_pos(), mouse_up)
         back_btn.draw(screen)
         if action == GameState.TITLE:
@@ -176,7 +186,7 @@ def main_menu_loop(screen):
         for button in buttons:
             action = button.update(pygame.mouse.get_pos(), mouse_up)
             if action == GameState.START:
-                print("Start game")  # replace with actual game loop
+                print("Start game")  # Replace with actual game loop
             elif action == GameState.SETTINGS:
                 result = settings_screen(screen)
                 if result == GameState.QUIT:
@@ -197,21 +207,21 @@ def main_menu_loop(screen):
 # -----------------------------
 # Main function
 # -----------------------------
-MASTER_VOLUME = 0.8
-MUSIC_VOLUME = 0.6
-
 def main():
     global MASTER_VOLUME, MUSIC_VOLUME
     pygame.init()
     pygame.mixer.init()
-
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption("Haunted Meadow Brook")
 
-    # Load background music
-    pygame.mixer.music.load("background_music.mp3")  # put your file in the same folder
-    pygame.mixer.music.set_volume(MUSIC_VOLUME)
-    pygame.mixer.music.play(-1)
+    # Load background music safely
+    music_file = "spooky_theme.mp3"
+    if os.path.isfile(music_file):
+        pygame.mixer.music.load(music_file)
+        pygame.mixer.music.set_volume(MUSIC_VOLUME)
+        pygame.mixer.music.play(-1)
+    else:
+        print(f"Warning: {music_file} not found. Music disabled.")
 
     result = main_menu_loop(screen)
     if result == GameState.QUIT:

@@ -13,8 +13,11 @@ ORANGE = (255, 140, 0)
 
 # Helper function
 
-def create_surface_with_text(text, font_size, text_rgb, bg_rgb, padding=12):
-    font = pygame.freetype.SysFont("Courier", font_size, bold=True)
+def create_surface_with_text(text, font_size, text_rgb, bg_rgb, padding=12, font_path=None):
+    if font_path:
+        font = pygame.freetype.Font(font_path, font_size)
+    else:
+        font = pygame.freetype.SysFont("Courier", font_size, bold=True)
     text_surface, _ = font.render(text, fgcolor=text_rgb)
     width = text_surface.get_width() + padding * 2
     height = text_surface.get_height() + padding * 2
@@ -152,7 +155,15 @@ def settings_screen(screen):
 # Main menu loop
 
 def main_menu_loop(screen):
-    title_surface = create_surface_with_text("HAUNTED MEADOW BROOK", 48, WHITE, ORANGE, padding=20)
+    title_surface = create_surface_with_text(
+    "HAUNTED MEADOW BROOK",
+    90,
+    WHITE,
+    ORANGE,
+    padding=20,
+    font_path="BlackWitcher.otf"
+    )
+
     title_rect = title_surface.get_rect(center=(400, 140))
 
     buttons = [

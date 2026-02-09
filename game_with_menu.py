@@ -3,6 +3,43 @@ import pygame.freetype
 from pygame.sprite import Sprite
 from enum import Enum
 from pygame.rect import Rect
+import random
+
+# -------------------------------
+# GHOST AI (WANDERING ONLY)
+# -------------------------------
+
+#ghost_img = pygame.image.load("photos\\grizzly_photos\\grizzly_ghost.png").convert_alpha()
+#ghost_img = pygame.transform.scale(ghost_img, (120, 140))  # adjust size if needed
+
+class Ghost(pygame.sprite.Sprite):
+    def __init__(self, start_pos, room_rect,image):
+        super().__init__()
+        self.image = image
+        self.rect = self.image.get_rect(center=start_pos)
+
+        self.room_rect = room_rect
+        self.speed = 4
+
+        self.direction = random.choice([(1,0), (-1,0), (0,1), (0,-1)])
+        self.timer = random.randint(400, 1200)
+
+    def update(self, dt):
+        self.timer -= dt
+
+        if self.timer <= 0:
+            self.direction = random.choice([(1,0), (-1,0), (0,1), (0,-1)])
+            self.timer = random.randint(400, 1200)
+
+        dx, dy = self.direction
+        next_rect = self.rect.move(dx * self.speed, dy * self.speed)
+
+        # Keep ghost inside its room
+        if self.room_rect.contains(next_rect):
+            self.rect = next_rect
+        else:
+            self.timer = 0
+
 
 #set width and height of screen
 WIDTH = 900
@@ -178,28 +215,44 @@ def menu(screen):
 
 
 def play_level(screen):
+    clock = pygame.time.Clock()# Load ghost image AFTER display is initialized
+    ghost_img = pygame.image.load(
+        "photos\\grizzly_photos\\grizzly_ghost.png"
+    ).convert_alpha()
+    ghost_img = pygame.transform.scale(ghost_img, (120, 140))
 
-    #run game
+    
+
+    # Define the room the ghost can wander in
+    ghost_room = pygame.Rect(150, 120, 600, 450)
+
+    # Create the ghost
+    ghost = Ghost(
+    start_pos=ghost_room.center,
+    room_rect=ghost_room,
+    image=ghost_img
+    )
+
     run = True
     while run:
-        pygame.time.delay(100)
-        
+        dt = clock.tick(60)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-                
-        #left, right, up, down movement based on keys pressed
+
+        # ---------------- PLAYER MOVEMENT ----------------
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
             player_rect.x -= vel
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             player_rect.x += vel
         if keys[pygame.K_w] or keys[pygame.K_UP]:
-            player_rect.y -= vel 
+            player_rect.y -= vel
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
             player_rect.y += vel
-            
-        #keep player inside edges of screen
+
+        # Keep player inside screen
         if player_rect.right > WIDTH + 150:
             player_rect.right = WIDTH + 150
         if player_rect.left < 0:
@@ -208,9 +261,19 @@ def play_level(screen):
             player_rect.bottom = HEIGHT + 225
         if player_rect.top < 0:
             player_rect.top = 0
-        
-        screen.fill(ORANGE)    
-        screen.blit(player, player_rect)  
+
+        # ---------------- GHOST UPDATE ----------------
+        ghost.update(dt)
+
+        # ---------------- DRAW ----------------
+        screen.fill(ORANGE)
+
+        # Debug: draw ghost room boundary
+        pygame.draw.rect(screen, BLACK, ghost_room, 3)
+
+        screen.blit(player, player_rect)
+        screen.blit(ghost.image, ghost.rect)
+
         pygame.display.update()
 
 if __name__ == "__main__":

@@ -83,7 +83,7 @@ class Ghost(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=start_pos)
 
         self.room_rect = room_rect
-        self.speed = 4
+        self.speed = 2
 
         self.direction = random.choice([(1,0), (-1,0), (0,1), (0,-1)])
         self.timer = random.randint(400, 1200)

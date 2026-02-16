@@ -1,4 +1,4 @@
-py game_with_menu_music_ghost.py
+
 import pygame
 import pygame.freetype
 import random
@@ -378,114 +378,82 @@ def play_level(screen):
     )
 
     paused = False
+    clock = pygame.time.Clock()
 
-    mouse_up = False
-   
-    
-    if not paused:
-        pass
-
-    if paused:
-        overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 160))  # dark transparent overlay
-        screen.blit(overlay, (0, 0))
-
-        pause_text = create_surface_with_text(
-            "PAUSED", 48, WHITE, (0, 0, 0, 0)
-        )
-        screen.blit(
-            pause_text,
-            pause_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-        )
-
-    clock = pygame.time.Clock()# Load ghost image AFTER display is initialized
-    ghost_img = pygame.image.load(
-        "photos\\grizzly_photos\\grizzly_ghost.png"
-    ).convert_alpha()
+    # Load ghost
+    ghost_img = pygame.image.load("photos\\grizzly_photos\\grizzly_ghost.png").convert_alpha()
     ghost_img = pygame.transform.scale(ghost_img, (80, 100))
-    
-    # Define the room the ghost can wander in
     ghost_room = pygame.Rect(100, 100, 700, 500)
-    # Debug: draw ghost room boundary
-    #pygame.draw.rect(screen, BLACK, ghost_room, 3)
-
-    # Create the ghost
-    ghost = Ghost(
-    start_pos=ghost_room.center,
-    room_rect=ghost_room,
-    image=ghost_img
-    )
+    ghost = Ghost(start_pos=ghost_room.center, room_rect=ghost_room, image=ghost_img)
 
     while True:
         dt = clock.tick(60)
         mouse_up = False
 
-         for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            return GameState.QUIT
-
-        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            mouse_up = True
-
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            paused = not paused 
-
-        action = pause_button.update(pygame.mouse.get_pos(), mouse_up)
-            if action == "PAUSE":
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return GameState.QUIT
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                mouse_up = True
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 paused = not paused
 
-        for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            return GameState.QUIT
-        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            mouse_up = True
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+        # Update pause button
+        action = pause_button.update(pygame.mouse.get_pos(), mouse_up)
+        if action == "PAUSE":
             paused = not paused
 
-        keys = pygame.key.get_pressed()
-        moving = False
+        # Draw pause overlay if paused
+        if paused:
+            overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 160))  # dark transparent overlay
+            screen.blit(overlay, (0, 0))
+            pause_text = create_surface_with_text("PAUSED", 48, WHITE, (0, 0, 0, 0))
+            screen.blit(pause_text, pause_text.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
 
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            player_rect.x -= vel
-            current_direction = "left"
-            moving = True
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            player_rect.x += vel
-            current_direction = "right"
-            moving = True
-        if keys[pygame.K_w] or keys[pygame.K_UP]:
-            player_rect.y -= vel
-            current_direction = "back"
-            moving = True
-        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            player_rect.y += vel
-            current_direction = "forward"
-            moving = True
-
-        if moving:
-            frame_timer += dt
-            walk_timer += dt
-
-            if frame_timer >= FRAME_DELAY:
-                current_frame = (current_frame + 1) % 4
-                frame_timer = 0
-
-            if walk_timer >= BOB_DELAY:
-                walk_offset = -BOB_AMOUNT if walk_offset == 0 else 0
-                walk_timer = 0
         else:
-            current_frame = 0
-            frame_timer = 0
-            walk_offset = 0
+            keys = pygame.key.get_pressed()
+            moving = False
 
-        player_image = animations[current_direction][current_frame]
-        player_rect.clamp_ip(screen.get_rect())
+            if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+                player_rect.x -= vel
+                current_direction = "left"
+                moving = True
+            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+                player_rect.x += vel
+                current_direction = "right"
+                moving = True
+            if keys[pygame.K_w] or keys[pygame.K_UP]:
+                player_rect.y -= vel
+                current_direction = "back"
+                moving = True
+            if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+                player_rect.y += vel
+                current_direction = "forward"
+                moving = True
 
-        ghost.update(dt)
-        screen.fill(ORANGE)
-        screen.blit(player_image, (player_rect.x, player_rect.y + walk_offset))
-        screen.blit(ghost.image, ghost.rect)
-        pygame.display.flip()
+            if moving:
+                frame_timer += dt
+                walk_timer += dt
+                if frame_timer >= FRAME_DELAY:
+                    current_frame = (current_frame + 1) % 4
+                    frame_timer = 0
+                if walk_timer >= BOB_DELAY:
+                    walk_offset = -BOB_AMOUNT if walk_offset == 0 else 0
+                    walk_timer = 0
+            else:
+                current_frame = 0
+                frame_timer = 0
+                walk_offset = 0
+
+            player_image = animations[current_direction][current_frame]
+            player_rect.clamp_ip(screen.get_rect())
+            ghost.update(dt)
+
+            # Draw everything
+            screen.fill(ORANGE)
+            screen.blit(player_image, (player_rect.x, player_rect.y + walk_offset))
+            screen.blit(ghost.image, ghost.rect)
 
         pause_button.draw(screen)
         pygame.display.flip()

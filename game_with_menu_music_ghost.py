@@ -383,6 +383,7 @@ def play_level(screen):
    
     
     if not paused:
+        pass
 
     if paused:
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
@@ -420,7 +421,7 @@ def play_level(screen):
         mouse_up = False
 
          for event in pygame.event.get():
-       if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT:
             return GameState.QUIT
 
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
@@ -431,13 +432,15 @@ def play_level(screen):
 
         action = pause_button.update(pygame.mouse.get_pos(), mouse_up)
             if action == "PAUSE":
-            paused = not paused
+                paused = not paused
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return GameState.QUIT
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                return GameState.MENU
+        if event.type == pygame.QUIT:
+            return GameState.QUIT
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            mouse_up = True
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            paused = not paused
 
         keys = pygame.key.get_pressed()
         moving = False

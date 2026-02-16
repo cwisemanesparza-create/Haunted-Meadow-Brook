@@ -1,3 +1,4 @@
+py game_with_menu_music_ghost.py
 import pygame
 import pygame.freetype
 import random
@@ -365,6 +366,37 @@ def play_level(screen):
     global current_direction, current_frame, frame_timer
     global walk_timer, walk_offset
 
+    #PAUSE BUTTON
+    
+    pause_button = UIElement (
+        center_position=(WIDTH - 60, 40),
+        text="II",
+        font_size=26,
+        bg_rgb=BLACK,
+        text_rgb=WHITE,
+        action="PAUSE"
+    )
+
+    paused = False
+
+    mouse_up = False
+   
+    
+    if not paused:
+
+    if paused:
+        overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 160))  # dark transparent overlay
+        screen.blit(overlay, (0, 0))
+
+        pause_text = create_surface_with_text(
+            "PAUSED", 48, WHITE, (0, 0, 0, 0)
+        )
+        screen.blit(
+            pause_text,
+            pause_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        )
+
     clock = pygame.time.Clock()# Load ghost image AFTER display is initialized
     ghost_img = pygame.image.load(
         "photos\\grizzly_photos\\grizzly_ghost.png"
@@ -385,6 +417,21 @@ def play_level(screen):
 
     while True:
         dt = clock.tick(60)
+        mouse_up = False
+
+         for event in pygame.event.get():
+       if event.type == pygame.QUIT:
+            return GameState.QUIT
+
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            mouse_up = True
+
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            paused = not paused 
+
+        action = pause_button.update(pygame.mouse.get_pos(), mouse_up)
+            if action == "PAUSE":
+            paused = not paused
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -437,6 +484,8 @@ def play_level(screen):
         screen.blit(ghost.image, ghost.rect)
         pygame.display.flip()
 
+        pause_button.draw(screen)
+        pygame.display.flip()
 
 if __name__ == "__main__":
     main()

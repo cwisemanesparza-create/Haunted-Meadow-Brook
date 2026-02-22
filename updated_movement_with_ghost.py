@@ -1,11 +1,6 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> 0177dea87482af1f1cbccb463134e3d28cb3f02e
 import pygame
 import pygame.freetype
 import random
-import os
 from pygame.sprite import Sprite
 from pygame.rect import Rect
 from enum import Enum
@@ -18,10 +13,6 @@ HEIGHT = 700
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 ORANGE = (255, 140, 0)
-
-# Global volume values
-MASTER_VOLUME = 0.8
-MUSIC_VOLUME = 0.6
 
 # Player movement
 vel = 3
@@ -36,7 +27,7 @@ FRAME_DELAY = 110
 
 # Helper function
 def create_surface_with_text(text, font_size, text_rgb, bg_rgb, padding=12):
-    font = pygame.freetype.SysFont("music&text/BlackWitcher.otf", font_size, bold=True)
+    font = pygame.freetype.SysFont("Courier", font_size, bold=True)
     text_surface, _ = font.render(text, fgcolor=text_rgb)
 
     width = text_surface.get_width() + padding * 2
@@ -83,35 +74,6 @@ class UIElement(Sprite):
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
-        
-# Slider class
-class Slider:
-    def __init__(self, pos, size, label, value=0.5):
-        self.x, self.y = pos
-        self.width, self.height = size
-        self.label = label
-        self.value = value
-        self.dragging = False
-        self.track_rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.knob_radius = self.height // 2 + 4
-
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and self.track_rect.collidepoint(event.pos):
-            self.dragging = True
-        if event.type == pygame.MOUSEBUTTONUP:
-            self.dragging = False
-        if event.type == pygame.MOUSEMOTION and self.dragging:
-            rel_x = max(self.x, min(event.pos[0], self.x + self.width))
-            self.value = (rel_x - self.x) / self.width
-
-    def draw(self, screen):
-        font = pygame.font.Font(None, 28)
-        label_surf = font.render(self.label, True, WHITE)
-        screen.blit(label_surf, (self.x, self.y - 30))
-        pygame.draw.rect(screen, WHITE, self.track_rect, 2)
-        knob_x = self.x + int(self.value * self.width)
-        knob_y = self.y + self.height // 2
-        pygame.draw.circle(screen, WHITE, (knob_x, knob_y), self.knob_radius)
 
 # Ghost AI (Wandering Only)
 class Ghost(pygame.sprite.Sprite):
@@ -151,111 +113,6 @@ class GameState(Enum):
     ABOUT = 4
     QUIT = -1
 
-# Settings screen
-def settings(screen):
-    global MASTER_VOLUME, MUSIC_VOLUME
-    clock = pygame.time.Clock()
-
-    header_font = pygame.font.Font(None, 36)
-    header_surface = header_font.render("AUDIO SETTINGS", True, WHITE)
-    header_rect = pygame.Rect(200, 50, 400, 60)
-
-    master_slider = Slider((250, 180), (300, 8), "Master Volume", MASTER_VOLUME)
-    music_slider = Slider((250, 260), (300, 8), "Music Volume", MUSIC_VOLUME / MASTER_VOLUME if MASTER_VOLUME>0 else 0)
-
-    back_btn = UIElement((400, 500), "Back", 28, BLACK, WHITE, GameState.MENU)
-
-    while True:
-        mouse_up = False
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                return GameState.QUIT
-            master_slider.handle_event(event)
-            music_slider.handle_event(event)
-            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                mouse_up = True
-                
-        # Draw screen
-        screen.fill(ORANGE)
-        pygame.draw.rect(screen, BLACK, header_rect)
-        screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
-        master_slider.draw(screen)
-        music_slider.draw(screen)
-        
-        action = back_btn.update(pygame.mouse.get_pos(), mouse_up)
-        back_btn.draw(screen)
-        if action == GameState.MENU:
-            return GameState.MENU
-        
-        # Update volume in real time
-        MASTER_VOLUME = master_slider.value
-        MUSIC_VOLUME = music_slider.value * MASTER_VOLUME
-        pygame.mixer.music.set_volume(MUSIC_VOLUME)
-
-        pygame.display.flip()
-
-# Achievements screen
-def achievements(screen):
-
-    header_font = pygame.font.Font(None, 36)
-    header_surface = header_font.render("ACHIEVEMENTS", True, WHITE)
-    header_rect = pygame.Rect(200, 50, 400, 60)
-
-    back_btn = UIElement((400, 500), "Back", 28, BLACK, WHITE, GameState.MENU)
-
-    while True:
-        mouse_up = False
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                return GameState.QUIT
-            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                mouse_up = True
-                
-        # Draw screen
-        screen.fill(ORANGE)
-        pygame.draw.rect(screen, BLACK, header_rect)
-        screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
-        
-        action = back_btn.update(pygame.mouse.get_pos(), mouse_up)
-        back_btn.draw(screen)
-        if action == GameState.MENU:
-            return GameState.MENU
-
-        pygame.display.flip()
-        
-# About screen
-def about(screen):
-    clock = pygame.time.Clock()
-
-    header_font = pygame.font.Font(None, 36)
-    header_surface = header_font.render("About Haunted Meadow Brook", True, WHITE)
-    header_rect = pygame.Rect(200, 50, 400, 60)
-    
-    back_btn = UIElement((400, 500), "Back", 28, BLACK, WHITE, GameState.MENU)
-
-    while True:
-        mouse_up = False
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                return GameState.QUIT
-            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                mouse_up = True
-                
-        # Draw screen
-        screen.fill(ORANGE)
-        pygame.draw.rect(screen, BLACK, header_rect)
-        screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
-        
-        action = back_btn.update(pygame.mouse.get_pos(), mouse_up)
-        back_btn.draw(screen)
-        if action == GameState.MENU:
-            return GameState.MENU
-
-        pygame.display.flip()
-
 def load_scaled(path, size):
     img = pygame.image.load(path).convert_alpha()
     return pygame.transform.scale(img, size)
@@ -263,24 +120,12 @@ def load_scaled(path, size):
 # Main function
 def main():
     global animations, player_image, player_rect
-    global MASTER_VOLUME, MUSIC_VOLUME
 
     pygame.init()
-    pygame.mixer.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Haunted Meadow Brook")
 
     SPRITE_SIZE = (150, 190)
-
-    # Load background music safely
-    music_file = ("music&text/spooky_theme.mp3")
-    if os.path.isfile(music_file):
-        pygame.mixer.music.load(music_file)
-        pygame.mixer.music.set_volume(MUSIC_VOLUME)
-        pygame.mixer.music.play(-1)
-    else:
-        print(f"Warning: {music_file} not found. Music disabled.")
-
 
     animations = {
         "forward": [
@@ -319,12 +164,6 @@ def main():
             state = menu(screen)
         elif state == GameState.START:
             state = play_level(screen)
-        elif state == GameState.SETTINGS:
-            state = settings(screen)
-        elif state == GameState.ACHIEVEMENTS:
-            state = achievements(screen)
-        elif state == GameState.ABOUT:
-            state = about(screen)
         elif state == GameState.QUIT:
             pygame.quit()
             return
@@ -343,7 +182,7 @@ def menu(screen):
         "HAUNTED MEADOW BROOK", 48, WHITE, ORANGE, padding=20
     )
     title_rect = title_surface.get_rect(center=(WIDTH/2, 150))
-    
+
     while True:
         mouse_up = False
         for event in pygame.event.get():
@@ -369,31 +208,6 @@ def play_level(screen):
     global current_direction, current_frame, frame_timer
     global walk_timer, walk_offset
 
-<<<<<<< HEAD
-    #PAUSE BUTTON
-    
-    pause_button = UIElement (
-        center_position=(WIDTH - 60, 40),
-        text="II",
-        font_size=26,
-        bg_rgb=BLACK,
-        text_rgb=WHITE,
-        action="PAUSE"
-    )
-
-    paused = False
-    clock = pygame.time.Clock()
-
-    # Load ghost
-    ghost_img = pygame.image.load("photos\\grizzly_photos\\grizzly_ghost.png").convert_alpha()
-    ghost_img = pygame.transform.scale(ghost_img, (80, 100))
-    ghost_room = pygame.Rect(100, 100, 700, 500)
-    ghost = Ghost(start_pos=ghost_room.center, room_rect=ghost_room, image=ghost_img)
-
-    while True:
-        dt = clock.tick(60)
-        mouse_up = False
-=======
     clock = pygame.time.Clock()# Load ghost image AFTER display is initialized
     ghost_img = pygame.image.load(
         "photos\\grizzly_photos\\grizzly_ghost.png"
@@ -414,78 +228,10 @@ def play_level(screen):
 
     while True:
         dt = clock.tick(60)
->>>>>>> 0177dea87482af1f1cbccb463134e3d28cb3f02e
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return GameState.QUIT
-<<<<<<< HEAD
-            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                mouse_up = True
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                paused = not paused
-
-        # Update pause button
-        action = pause_button.update(pygame.mouse.get_pos(), mouse_up)
-        if action == "PAUSE":
-            paused = not paused
-
-        # Draw pause overlay if paused
-        if paused:
-            overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 160))  # dark transparent overlay
-            screen.blit(overlay, (0, 0))
-            pause_text = create_surface_with_text("PAUSED", 48, WHITE, (0, 0, 0, 0))
-            screen.blit(pause_text, pause_text.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
-
-        else:
-            keys = pygame.key.get_pressed()
-            moving = False
-
-            if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-                player_rect.x -= vel
-                current_direction = "left"
-                moving = True
-            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-                player_rect.x += vel
-                current_direction = "right"
-                moving = True
-            if keys[pygame.K_w] or keys[pygame.K_UP]:
-                player_rect.y -= vel
-                current_direction = "back"
-                moving = True
-            if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-                player_rect.y += vel
-                current_direction = "forward"
-                moving = True
-
-            if moving:
-                frame_timer += dt
-                walk_timer += dt
-                if frame_timer >= FRAME_DELAY:
-                    current_frame = (current_frame + 1) % 4
-                    frame_timer = 0
-                if walk_timer >= BOB_DELAY:
-                    walk_offset = -BOB_AMOUNT if walk_offset == 0 else 0
-                    walk_timer = 0
-            else:
-                current_frame = 0
-                frame_timer = 0
-                walk_offset = 0
-
-            player_image = animations[current_direction][current_frame]
-            player_rect.clamp_ip(screen.get_rect())
-            ghost.update(dt)
-
-            # Draw everything
-            screen.fill(ORANGE)
-            screen.blit(player_image, (player_rect.x, player_rect.y + walk_offset))
-            screen.blit(ghost.image, ghost.rect)
-
-        pause_button.draw(screen)
-        pygame.display.flip()
-
-=======
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return GameState.MENU
 
@@ -535,6 +281,5 @@ def play_level(screen):
         pygame.display.flip()
 
 
->>>>>>> 0177dea87482af1f1cbccb463134e3d28cb3f02e
 if __name__ == "__main__":
     main()

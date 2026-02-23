@@ -1,15 +1,21 @@
 import pygame
 import pygame.freetype
-import random
+import random, math
 import os
 from pygame.sprite import Sprite
 from pygame.rect import Rect
 from enum import Enum
+from random import randint
 
-# Menu Width, Height, Size
+# Screen Width, Height, Size
 WIDTH = 1500
 HEIGHT = 670
 SCREEN_SIZE = (WIDTH, HEIGHT)
+
+# Background Width, Height, Size
+BG_WIDTH = 3400
+BG_HEIGHT = 670
+BG_SIZE = (BG_WIDTH, BG_HEIGHT)
 
 # Player and Ghost size
 PLAYER_SIZE = (150, 190)
@@ -114,6 +120,121 @@ class Slider:
         knob_y = self.y + self.height // 2
         pygame.draw.circle(screen, WHITE, (knob_x, knob_y), self.knob_radius)
 
+# Camera class
+class Camera(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+        
+        # camera offset 
+        self.offset = pygame.math.Vector2()
+        self.half_w = self.display_surface.get_size()[0] // 2
+        self.half_h = self.display_surface.get_size()[1] // 2
+        
+        # box setup
+        self.camera_borders = {"left": 0, "right": WIDTH/2, "top": 0, "bottom": HEIGHT/2}
+        l = self.camera_borders["left"]
+        t = self.camera_borders["top"]
+        w = self.display_surface.get_size()[0]  - (self.camera_borders["left"] + self.camera_borders["right"])
+        h = self.display_surface.get_size()[1]  - (self.camera_borders["top"] + self.camera_borders["bottom"])
+        self.camera_rect = pygame.Rect(l, t, w, h)
+        
+        # ground
+        self.ground_surf = pygame.image.load("photos/background_photos/hallway_game.png").convert_alpha()
+        self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
+        
+        # camera speed
+        self.keyboard_speed = SPEED
+        
+        # zoom 
+        self.zoom_scale = 1
+        self.internal_surf_size = (SCREEN_SIZE)
+        self.internal_surf = pygame.Surface(self.internal_surf_size, pygame.SRCALPHA)
+        self.internal_rect = self.internal_surf.get_rect(center = (self.half_w,self.half_h))
+        self.internal_surface_size_vector = pygame.math.Vector2(self.internal_surf_size)
+        self.internal_offset = pygame.math.Vector2()
+        self.internal_offset.x = self.internal_surf_size[0] // 2 - self.half_w
+        self.internal_offset.y = self.internal_surf_size[1] // 2 - self.half_h
+        
+    def box_target_camera(self, target):
+        if target.rect.left < self.camera_rect.left:
+            self.camera_rect.left = target.rect.left
+        if target.rect.right > self.camera_rect.right:
+            self.camera_rect.right = target.rect.right
+        if target.rect.top < self.camera_rect.top:
+            self.camera_rect.top = target.rect.top
+        if target.rect.bottom > self.camera_rect.bottom:
+            self.camera_rect.bottom = target.rect.bottom
+            
+        self.offset.x = self.camera_rect.left - self.camera_borders["left"]
+        self.offset.y = self.camera_rect.top - self.camera_borders["top"]
+        
+        self.offset.x = self.camera_rect.right - self.camera_borders["right"]
+        self.offset.y = self.camera_rect.bottom - self.camera_borders["bottom"]
+        
+    def keyboard_control(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_a]: self.camera_rect.x -= self.keyboard_speed
+        if keys[pygame.K_d]: self.camera_rect.x += self.keyboard_speed
+        if keys[pygame.K_w]: self.camera_rect.y -= self.keyboard_speed
+        if keys[pygame.K_s]: self.camera_rect.y += self.keyboard_speed
+
+        self.offset.x = self.camera_rect.left - self.camera_borders["left"]
+        self.offset.y = self.camera_rect.top - self.camera_borders["top"]
+        
+        self.offset.x = self.camera_rect.right - self.camera_borders["right"]
+        self.offset.y = self.camera_rect.bottom - self.camera_borders["bottom"]
+    
+    def custom_draw(self,player):
+        self.box_target_camera(player)
+        self.keyboard_control()
+        
+        self.internal_surf.fill(BLACK)
+
+		# ground 
+        ground_offset = self.ground_rect.topleft - self.offset + self.internal_offset
+        self.internal_surf.blit(self.ground_surf,ground_offset)
+
+		# active elements
+        for sprite in sorted(self.sprites(),key = lambda sprite: sprite.rect.centery):
+            offset_pos = sprite.rect.topleft - self.offset + self.internal_offset
+            self.internal_surf.blit(sprite.image,offset_pos)
+
+        scaled_surf = pygame.transform.scale(self.internal_surf,self.internal_surface_size_vector * self.zoom_scale)
+        scaled_rect = scaled_surf.get_rect(center = (self.half_w,self.half_h))
+
+        self.display_surface.blit(scaled_surf,scaled_rect)
+        
+# Player class
+class Player(pygame.sprite.Sprite):
+    def __init__(self, image, pos, group):
+        super().__init__(group)
+        self.image = image
+        self.rect = self.image.get_rect(center = pos)
+        self.direction = pygame.math.Vector2()
+        self.speed = SPEED
+        
+    def input(self):
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            self.direction.x = -2
+        elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            self.direction.x = 2
+        else:
+            self.direction.x = 0
+            
+        if keys[pygame.K_w] or keys[pygame.K_UP]:
+            self.direction.y = -2
+        elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
+            self.direction.y = 2
+        else:
+            self.direction.y = 0
+    
+    def update(self):
+        self.input()
+        self.rect.center += self.direction * self.speed
+  
 # Ghost AI (Wandering Only)
 class Ghost(pygame.sprite.Sprite):
     def __init__(self, start_pos, room_rect,image):
@@ -271,8 +392,6 @@ def main():
     screen = pygame.display.set_mode((SCREEN_SIZE))
     pygame.display.set_caption("Haunted Meadow Brook")
 
-    SPRITE_SIZE = (150, 190)
-
     # Load background music safely
     music_file = ("music&text/spooky_theme.mp3")
     if os.path.isfile(music_file):
@@ -281,7 +400,6 @@ def main():
         pygame.mixer.music.play(-1)
     else:
         print(f"Warning: {music_file} not found. Music disabled.")
-
 
     animations = {
         "forward": [
@@ -309,10 +427,7 @@ def main():
             load_scaled("photos/grizzly_photos/8-bit_grizz_face_right_right_foot.png", PLAYER_SIZE),
         ],
     }
-
-    player_image = animations["forward"][0]
-    player_rect = player_image.get_rect(center=(500, 400))
-
+    
     state = GameState.MENU
 
     while True:
@@ -364,7 +479,6 @@ def menu(screen):
 
 
 def play_level(screen):
-    global player_image, player_rect
     global current_direction, current_frame, frame_timer
     global walk_timer, walk_offset
     
@@ -372,7 +486,8 @@ def play_level(screen):
     pygame.mixer.init()
     screen = pygame.display.set_mode((SCREEN_SIZE))
     pygame.display.set_caption("Haunted Meadow Brook")
-
+    background = pygame.Surface(BG_SIZE)
+    
     #PAUSE BUTTON
     pause_button = UIElement (
         center_position=(WIDTH - 60, 40),
@@ -388,10 +503,24 @@ def play_level(screen):
 
     # Load ghost
     ghost_img = pygame.image.load("photos\\grizzly_photos\\grizzly_ghost.png").convert_alpha()
-    ghost_img = pygame.transform.scale(ghost_img, (80, 100))
-    ghost_room = pygame.Rect(100, 100, 700, 500)
-    ghost = Ghost(start_pos=ghost_room.center, room_rect=ghost_room, image=ghost_img)
-
+    ghost_img = pygame.transform.scale(ghost_img, (GHOST_SIZE))
+    # Define the room the ghost can wander in
+    ghost_room = pygame.Rect(0, 0, WIDTH, HEIGHT)
+    # Create the ghost
+    ghost = Ghost(
+    start_pos=ghost_room.center,
+    room_rect=ghost_room,
+    image=ghost_img
+    )
+        
+    # Create the player and camera
+    camera_group = Camera()
+    player = Player(
+        image = animations["forward"][0], 
+        pos = (WIDTH/2, HEIGHT/2), 
+        group = camera_group
+    )
+    
     while True:
         dt = clock.tick(60)
         mouse_up = False
@@ -403,12 +532,13 @@ def play_level(screen):
                 mouse_up = True
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 paused = not paused
-
+                return GameState.MENU
+            
         # Update pause button
         action = pause_button.update(pygame.mouse.get_pos(), mouse_up)
         if action == "PAUSE":
             paused = not paused
-
+            
         # Draw pause overlay if paused
         if paused:
             overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
@@ -416,34 +546,41 @@ def play_level(screen):
             screen.blit(overlay, (0, 0))
             pause_text = create_surface_with_text("PAUSED", 48, WHITE, (0, 0, 0, 0))
             screen.blit(pause_text, pause_text.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
-
+            
         else:
             keys = pygame.key.get_pressed()
             moving = False
 
             if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-                player_rect.x -= SPEED
+                player.direction.x = -2
                 current_direction = "left"
                 moving = True
-            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-                player_rect.x += SPEED
+            elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+                player.direction.x = 2
                 current_direction = "right"
                 moving = True
+            else:
+                player.direction.x = 0
+                
             if keys[pygame.K_w] or keys[pygame.K_UP]:
-                player_rect.y -= SPEED
+                player.direction.y = -2
                 current_direction = "back"
                 moving = True
-            if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-                player_rect.y += SPEED
+            elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
+                player.direction.y = 2
                 current_direction = "forward"
                 moving = True
+            else:
+                player.direction.y = 0
 
             if moving:
                 frame_timer += dt
                 walk_timer += dt
+
                 if frame_timer >= FRAME_DELAY:
                     current_frame = (current_frame + 1) % 4
                     frame_timer = 0
+
                 if walk_timer >= BOB_DELAY:
                     walk_offset = -BOB_AMOUNT if walk_offset == 0 else 0
                     walk_timer = 0
@@ -452,17 +589,16 @@ def play_level(screen):
                 frame_timer = 0
                 walk_offset = 0
 
-            player_image = animations[current_direction][current_frame]
-            player_rect.clamp_ip(screen.get_rect())
+            player.image = animations[current_direction][current_frame]
+            player.rect.clamp_ip(background.get_rect())
+            
+            camera_group.update()
+            camera_group.custom_draw(player)
             ghost.update(dt)
-
-            # Draw everything
-            screen.fill(ORANGE)
-            screen.blit(player_image, (player_rect.x, player_rect.y + walk_offset))
             screen.blit(ghost.image, ghost.rect)
-
+        
         pause_button.draw(screen)
-        pygame.display.flip()
+        pygame.display.update()
 
 if __name__ == "__main__":
     main()

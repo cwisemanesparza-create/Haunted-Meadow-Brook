@@ -6,9 +6,14 @@ from pygame.sprite import Sprite
 from pygame.rect import Rect
 from enum import Enum
 
-# Width and Height
-WIDTH = 900
-HEIGHT = 700
+# Menu Width, Height, Size
+WIDTH = 1500
+HEIGHT = 670
+SCREEN_SIZE = (WIDTH, HEIGHT)
+
+# Player and Ghost size
+PLAYER_SIZE = (150, 190)
+GHOST_SIZE = (80, 100)
 
 # Colors
 BLACK = (0, 0, 0)
@@ -20,7 +25,7 @@ MASTER_VOLUME = 0.8
 MUSIC_VOLUME = 0.6
 
 # Player movement
-vel = 3
+SPEED = 3
 walk_offset = 0
 walk_timer = 0
 BOB_DELAY = 120
@@ -263,7 +268,7 @@ def main():
 
     pygame.init()
     pygame.mixer.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    screen = pygame.display.set_mode((SCREEN_SIZE))
     pygame.display.set_caption("Haunted Meadow Brook")
 
     SPRITE_SIZE = (150, 190)
@@ -280,28 +285,28 @@ def main():
 
     animations = {
         "forward": [
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_forward.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_forward_left_foot.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_forward.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_forward_right_foot.png", SPRITE_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_forward.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_forward_left_foot.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_forward.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_forward_right_foot.png", PLAYER_SIZE),
         ],
         "back": [
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_back.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_back_left_foot.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_back.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_back_right_foot.png", SPRITE_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_back.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_back_left_foot.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_back.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_back_right_foot.png", PLAYER_SIZE),
         ],
         "left": [
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_left.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_left_left_foot.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_left.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_left_right_foot.png", SPRITE_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_left.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_left_left_foot.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_left.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_left_right_foot.png", PLAYER_SIZE),
         ],
         "right": [
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_right.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_right_left_foot.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_right.png", SPRITE_SIZE),
-            load_scaled("photos/grizzly_photos/8-bit_grizz_face_right_right_foot.png", SPRITE_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_right.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_right_left_foot.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_right.png", PLAYER_SIZE),
+            load_scaled("photos/grizzly_photos/8-bit_grizz_face_right_right_foot.png", PLAYER_SIZE),
         ],
     }
 
@@ -334,11 +339,6 @@ def menu(screen):
         UIElement((WIDTH/2, 460), "About", 26, BLACK, WHITE, GameState.ABOUT),
         UIElement((WIDTH/2, 520), "Quit", 26, BLACK, WHITE, GameState.QUIT),
     ]
-
-    title_surface = create_surface_with_text(
-        "HAUNTED MEADOW BROOK", 48, WHITE, ORANGE, padding=20
-    )
-    title_rect = title_surface.get_rect(center=(WIDTH/2, 150))
     
     while True:
         mouse_up = False
@@ -348,8 +348,11 @@ def menu(screen):
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_up = True
 
+        menu_background = pygame.Surface(SCREEN_SIZE)
+        menu_background_img = pygame.image.load("photos\\screen.png")
+        
         screen.fill(ORANGE)
-        screen.blit(title_surface, title_rect)
+        screen.blit(menu_background_img, (0, 0))
 
         for button in buttons:
             action = button.update(pygame.mouse.get_pos(), mouse_up)
@@ -364,79 +367,102 @@ def play_level(screen):
     global player_image, player_rect
     global current_direction, current_frame, frame_timer
     global walk_timer, walk_offset
-
-    clock = pygame.time.Clock()# Load ghost image AFTER display is initialized
-    ghost_img = pygame.image.load(
-        "photos\\grizzly_photos\\grizzly_ghost.png"
-    ).convert_alpha()
-    ghost_img = pygame.transform.scale(ghost_img, (80, 100))
     
-    # Define the room the ghost can wander in
-    ghost_room = pygame.Rect(100, 100, 700, 500)
-    # Debug: draw ghost room boundary
-    #pygame.draw.rect(screen, BLACK, ghost_room, 3)
+    pygame.init()
+    pygame.mixer.init()
+    screen = pygame.display.set_mode((SCREEN_SIZE))
+    pygame.display.set_caption("Haunted Meadow Brook")
 
-    # Create the ghost
-    ghost = Ghost(
-    start_pos=ghost_room.center,
-    room_rect=ghost_room,
-    image=ghost_img
+    #PAUSE BUTTON
+    pause_button = UIElement (
+        center_position=(WIDTH - 60, 40),
+        text="II",
+        font_size=26,
+        bg_rgb=BLACK,
+        text_rgb=WHITE,
+        action="PAUSE"
     )
+
+    paused = False
+    clock = pygame.time.Clock()
+
+    # Load ghost
+    ghost_img = pygame.image.load("photos\\grizzly_photos\\grizzly_ghost.png").convert_alpha()
+    ghost_img = pygame.transform.scale(ghost_img, (80, 100))
+    ghost_room = pygame.Rect(100, 100, 700, 500)
+    ghost = Ghost(start_pos=ghost_room.center, room_rect=ghost_room, image=ghost_img)
 
     while True:
         dt = clock.tick(60)
+        mouse_up = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return GameState.QUIT
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                mouse_up = True
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                return GameState.MENU
+                paused = not paused
 
-        keys = pygame.key.get_pressed()
-        moving = False
+        # Update pause button
+        action = pause_button.update(pygame.mouse.get_pos(), mouse_up)
+        if action == "PAUSE":
+            paused = not paused
 
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            player_rect.x -= vel
-            current_direction = "left"
-            moving = True
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            player_rect.x += vel
-            current_direction = "right"
-            moving = True
-        if keys[pygame.K_w] or keys[pygame.K_UP]:
-            player_rect.y -= vel
-            current_direction = "back"
-            moving = True
-        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            player_rect.y += vel
-            current_direction = "forward"
-            moving = True
+        # Draw pause overlay if paused
+        if paused:
+            overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 160))  # dark transparent overlay
+            screen.blit(overlay, (0, 0))
+            pause_text = create_surface_with_text("PAUSED", 48, WHITE, (0, 0, 0, 0))
+            screen.blit(pause_text, pause_text.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
 
-        if moving:
-            frame_timer += dt
-            walk_timer += dt
-
-            if frame_timer >= FRAME_DELAY:
-                current_frame = (current_frame + 1) % 4
-                frame_timer = 0
-
-            if walk_timer >= BOB_DELAY:
-                walk_offset = -BOB_AMOUNT if walk_offset == 0 else 0
-                walk_timer = 0
         else:
-            current_frame = 0
-            frame_timer = 0
-            walk_offset = 0
+            keys = pygame.key.get_pressed()
+            moving = False
 
-        player_image = animations[current_direction][current_frame]
-        player_rect.clamp_ip(screen.get_rect())
+            if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+                player_rect.x -= SPEED
+                current_direction = "left"
+                moving = True
+            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+                player_rect.x += SPEED
+                current_direction = "right"
+                moving = True
+            if keys[pygame.K_w] or keys[pygame.K_UP]:
+                player_rect.y -= SPEED
+                current_direction = "back"
+                moving = True
+            if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+                player_rect.y += SPEED
+                current_direction = "forward"
+                moving = True
 
-        ghost.update(dt)
-        screen.fill(ORANGE)
-        screen.blit(player_image, (player_rect.x, player_rect.y + walk_offset))
-        screen.blit(ghost.image, ghost.rect)
+            if moving:
+                frame_timer += dt
+                walk_timer += dt
+                if frame_timer >= FRAME_DELAY:
+                    current_frame = (current_frame + 1) % 4
+                    frame_timer = 0
+                if walk_timer >= BOB_DELAY:
+                    walk_offset = -BOB_AMOUNT if walk_offset == 0 else 0
+                    walk_timer = 0
+            else:
+                current_frame = 0
+                frame_timer = 0
+                walk_offset = 0
+
+            player_image = animations[current_direction][current_frame]
+            player_rect.clamp_ip(screen.get_rect())
+            ghost.update(dt)
+
+            # Draw everything
+            screen.fill(ORANGE)
+            screen.blit(player_image, (player_rect.x, player_rect.y + walk_offset))
+            screen.blit(ghost.image, ghost.rect)
+
+        pause_button.draw(screen)
         pygame.display.flip()
-
 
 if __name__ == "__main__":
     main()

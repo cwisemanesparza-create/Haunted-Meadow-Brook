@@ -13,7 +13,7 @@ HEIGHT = 670
 SCREEN_SIZE = (WIDTH, HEIGHT)
 
 # Background Width, Height, Size
-BG_WIDTH = 3400
+BG_WIDTH = 3446
 BG_HEIGHT = 670
 BG_SIZE = (BG_WIDTH, BG_HEIGHT)
 
@@ -140,7 +140,7 @@ class Camera(pygame.sprite.Group):
         self.camera_rect = pygame.Rect(l, t, w, h)
         
         # ground
-        self.ground_surf = pygame.image.load("photos/background_photos/hallway_game.png").convert_alpha()
+        self.ground_surf = pygame.image.load("photos/background_photos/Hallway_Main_Floor_A.png").convert_alpha()
         self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
         
         # camera speed
@@ -169,8 +169,8 @@ class Camera(pygame.sprite.Group):
         self.offset.x = self.camera_rect.left - self.camera_borders["left"]
         self.offset.y = self.camera_rect.top - self.camera_borders["top"]
         
-        self.offset.x = self.camera_rect.right - self.camera_borders["right"]
-        self.offset.y = self.camera_rect.bottom - self.camera_borders["bottom"]
+        self.offset.x = max(0, min(self.offset.x, BG_WIDTH - WIDTH))
+        self.offset.y = max(0, min(self.offset.y, BG_HEIGHT - HEIGHT))
         
     def keyboard_control(self):
         keys = pygame.key.get_pressed()
@@ -182,9 +182,9 @@ class Camera(pygame.sprite.Group):
         self.offset.x = self.camera_rect.left - self.camera_borders["left"]
         self.offset.y = self.camera_rect.top - self.camera_borders["top"]
         
-        self.offset.x = self.camera_rect.right - self.camera_borders["right"]
-        self.offset.y = self.camera_rect.bottom - self.camera_borders["bottom"]
-    
+        self.offset.x = max(0, min(self.offset.x, BG_WIDTH - WIDTH))
+        self.offset.y = max(0, min(self.offset.y, BG_HEIGHT - HEIGHT))
+        
     def custom_draw(self,player):
         self.box_target_camera(player)
         self.keyboard_control()
@@ -203,7 +203,7 @@ class Camera(pygame.sprite.Group):
         scaled_surf = pygame.transform.scale(self.internal_surf,self.internal_surface_size_vector * self.zoom_scale)
         scaled_rect = scaled_surf.get_rect(center = (self.half_w,self.half_h))
 
-        self.display_surface.blit(scaled_surf,scaled_rect)
+        self.display_surface.blit(scaled_surf, (0,0), scaled_rect)
         
 # Player class
 class Player(pygame.sprite.Sprite):
@@ -591,6 +591,7 @@ def play_level(screen):
 
             player.image = animations[current_direction][current_frame]
             player.rect.clamp_ip(background.get_rect())
+            camera_group.ground_rect.clamp_ip(background.get_rect())
             
             camera_group.update()
             camera_group.custom_draw(player)

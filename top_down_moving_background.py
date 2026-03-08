@@ -140,7 +140,7 @@ class Camera(pygame.sprite.Group):
         self.camera_rect = pygame.Rect(l, t, w, h)
         
         # ground
-        self.ground_surf = pygame.image.load("photos/background_photos/Hallway_Main_Floor_A.png").convert_alpha()
+        self.ground_surf = pygame.image.load("photos/background_photos/Hallway_Main_Floor_A_Update.png").convert_alpha()
         self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
         
         # camera speed

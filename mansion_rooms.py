@@ -31,7 +31,7 @@ MASTER_VOLUME = 0.8
 MUSIC_VOLUME = 0.6
 
 # Player movement
-SPEED = 5
+SPEED = 6
 walk_offset = 0
 walk_timer = 0
 BOB_DELAY = 120
@@ -607,22 +607,21 @@ def play_level(screen):
     ghost_img = pygame.transform.scale(ghost_img, (GHOST_SIZE))
     
     # Create separate ghosts for each room
-    hallway_ghost_room = pygame.Rect(0, 0, 3600, 700)
-    hallway_ghosts = [
+    hallwayA_ghost_room = pygame.Rect(0, 0, 3600, 700)
+    hallwayA_ghosts = [
         Ghost(
-            start_pos=hallway_ghost_room.center,
-            room_rect=hallway_ghost_room,
+            start_pos=hallwayA_ghost_room.center,
+            room_rect=hallwayA_ghost_room,
             image=ghost_img,
             group=camera_group  
         ),
         Ghost(
-            start_pos=hallway_ghost_room.center,
-            room_rect=hallway_ghost_room,
+            start_pos=hallwayA_ghost_room.center,
+            room_rect=hallwayA_ghost_room,
             image=ghost_img,
             group=camera_group  
         )
     ]
-    
     dining_ghost_room = pygame.Rect(0, 0, 1000, 900)  
     dining_ghosts = [
         Ghost(
@@ -644,9 +643,27 @@ def play_level(screen):
             group=camera_group  
         )
     ]
+    alfredstudy_ghost_room = pygame.Rect(0, 0, 900, 900)  
+    alfred_study_ghosts = [
+        Ghost(
+            start_pos=alfredstudy_ghost_room.center,
+            room_rect=alfredstudy_ghost_room,
+            image=ghost_img,
+            group=camera_group  
+        )
+    ]
+    matildastudy_ghost_room = pygame.Rect(0, 0, 900, 900)  
+    matilda_study_ghosts = [
+        Ghost(
+            start_pos=matildastudy_ghost_room.center,
+            room_rect=matildastudy_ghost_room,
+            image=ghost_img,
+            group=camera_group  
+        )
+    ]
     
     # Create rooms with their own ghosts
-    hallway_main_floor_A = Room(
+    hallway_A = Room(
         "photos/background_photos/Hallway_Main_Floor_A_Update.png",
         (3600, 700),
         doors={
@@ -654,9 +671,19 @@ def play_level(screen):
                 'rect': pygame.Rect(250, 100, 25, 50), 
                 'target_room': "dining_room",
                 'spawn_pos': (850, 750) 
+            },
+            "hallwayA_to_alfred": {
+                'rect': pygame.Rect(1525, 100, 25, 50), 
+                'target_room': "alfred_study",
+                'spawn_pos': (200, 750) 
+            },
+            "hallwayA_to_matilda": {
+                'rect': pygame.Rect(2350, 100, 25, 50), 
+                'target_room': "matilda_study",
+                'spawn_pos': (200, 750) 
             }
         },
-        ghosts=hallway_ghosts,
+        ghosts=hallwayA_ghosts,
         viewport=(1500, 700)
     )
 
@@ -664,9 +691,9 @@ def play_level(screen):
         "photos/background_photos/Dining_Room.png",
         (1000, 900),
         doors={
-            "dining_to_hallway": {
+            "dining_to_hallwayA": {
                 'rect': pygame.Rect(900, 850, 50, 60),  
-                'target_room': "hallway_main_floor_A",
+                'target_room': "hallway_A",
                 'spawn_pos': (250, 300)  
             }
         },
@@ -674,14 +701,44 @@ def play_level(screen):
         viewport=(1000, 700)
     )
     
+    alfred_study = Room(
+        "photos/background_photos/Alfreds_Study.png",
+        (900, 900),
+        doors={
+            "alfred_to_hallwayA": {
+                'rect': pygame.Rect(100, 850, 50, 60),  
+                'target_room': "hallway_A",
+                'spawn_pos': (1525, 300)  
+            }
+        },
+        ghosts=alfred_study_ghosts,
+        viewport=(900, 700)
+    )
+    
+    matilda_study = Room(
+        "photos/background_photos/Matildas_Study.png",
+        (900, 900),
+        doors={
+            "matilda_to_hallwayA": {
+                'rect': pygame.Rect(100, 850, 50, 60),  
+                'target_room': "hallway_A",
+                'spawn_pos': (2350, 300)  
+            }
+        },
+        ghosts=matilda_study_ghosts,
+        viewport=(900, 700)
+    )
+    
     # Room dictionary
     rooms = {
-        "hallway_main_floor_A": hallway_main_floor_A,
-        "dining_room": dining_room
+        "hallway_A": hallway_A,
+        "dining_room": dining_room,
+        "alfred_study": alfred_study,
+        "matilda_study": matilda_study
     }
     
     # Set initial current room
-    current_room = hallway_main_floor_A
+    current_room = hallway_A
     
     # Create player
     player = Player(

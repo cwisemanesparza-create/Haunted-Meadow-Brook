@@ -657,9 +657,15 @@ def play_level(screen):
             room_rect=hallwayA_ghost_room,
             image=ghost_img,
             group=camera_group  
+        ),
+        Ghost(
+            start_pos=hallwayA_ghost_room.center,
+            room_rect=hallwayA_ghost_room,
+            image=ghost_img,
+            group=camera_group  
         )
     ]
-    dining_ghost_room = pygame.Rect(0, 0, 1000, 900)  
+    dining_ghost_room = pygame.Rect(0, 0, 500, 400)  
     dining_ghosts = [
         Ghost(
             start_pos=dining_ghost_room.center,
@@ -667,20 +673,8 @@ def play_level(screen):
             image=ghost_img,
             group=camera_group  
         ),
-        Ghost(
-            start_pos=dining_ghost_room.center,
-            room_rect=dining_ghost_room,
-            image=ghost_img,
-            group=camera_group  
-        ),
-        Ghost(
-            start_pos=dining_ghost_room.center,
-            room_rect=dining_ghost_room,
-            image=ghost_img,
-            group=camera_group  
-        )
     ]
-    alfredstudy_ghost_room = pygame.Rect(0, 0, 900, 900)  
+    alfredstudy_ghost_room = pygame.Rect(0, 0, 400, 400)  
     alfred_study_ghosts = [
         Ghost(
             start_pos=alfredstudy_ghost_room.center,
@@ -689,7 +683,7 @@ def play_level(screen):
             group=camera_group  
         )
     ]
-    matildastudy_ghost_room = pygame.Rect(0, 0, 900, 900)  
+    matildastudy_ghost_room = pygame.Rect(0, 0, 400, 400)  
     matilda_study_ghosts = [
         Ghost(
             start_pos=matildastudy_ghost_room.center,

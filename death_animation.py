@@ -28,11 +28,42 @@ ORANGE = (255, 140, 0)
 
 # Achievements data # change to true when unlocked 
 achievements_data = [
-    {"image": "photos/achievements/Ac1.png", "Party Time": "Grab a  upgrade", "unlocked": False},
-    {"image": "photos/achievements/Ac2.png", "description": "Description 2", "unlocked": False},
-    {"image": "photos/achievements/Ac3.png", "description": "Description 3", "unlocked": False},
-    {"image": "photos/achievements/Ac4.png", "description": "Description 4", "unlocked": False},
-    {"image": "photos/achievements/Ac5.png", "description": "Description 5", "unlocked": False},
+    {
+        "title": "Speed Runner",
+        "description": "Finish the game in 10min.",
+        "unlocked": False,
+        "image_path": "photos/achievements/Ac1.png"
+    },
+    {
+        "title": "Treasure Hunter",
+        "description": "Find 10 Party supplies.",
+        "unlocked": False,
+        "image_path": "photos/achievements/Ac2.png"
+    },
+    {
+        "title": "Upgrade Maniac",
+        "description": "Pick 10 upgrades.",
+        "unlocked": False,
+        "image_path": "photos/achievements/Ac3.png"
+    },
+    {
+        "title": "Explorer",
+        "description": "Visit all rooms in the mansion.",
+        "unlocked": False,
+        "image_path": "photos/achievements/Ac6.png"
+    },
+    {
+        "title": "First Kill",
+        "description": "Capture your first ghost.",
+        "unlocked": False,
+        "image_path": "photos/achievements/Ac5.png"
+    },
+     {
+        "title": "Party Time",
+        "description": "Beat the game.",
+        "unlocked": False,
+        "image_path": "photos/achievements/Ac4.png"
+    }
 ]
 
 # Global volume values
@@ -407,6 +438,16 @@ class GameState(Enum):
 
 # Settings screen
 def settings(screen):
+    try:
+        background_img = pygame.image.load("photos/background.png").convert()
+        background_img = pygame.transform.scale(background_img, screen.get_size())
+    except Exception as e:
+        print(f"Error loading background.png: {e}")
+        background_img = pygame.Surface(screen.get_size())
+        background_img.fill(ORANGE)
+
+
+
     global MASTER_VOLUME, MUSIC_VOLUME
     clock = pygame.time.Clock()
 
@@ -431,7 +472,7 @@ def settings(screen):
                 mouse_up = True
                 
         # Draw screen
-        screen.fill(ORANGE)
+        screen.blit(background_img, (0, 0))
         pygame.draw.rect(screen, BLACK, header_rect)
         screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
         master_slider.draw(screen)
@@ -449,29 +490,66 @@ def settings(screen):
 
         pygame.display.flip()
 
+       
+
+
 # Achievements screen
 def achievements(screen):
     global achievements_data
-    
+
+    # Load background
+    try:
+        bg_img = pygame.image.load("photos/background.png").convert()
+        bg_img = pygame.transform.scale(bg_img, screen.get_size())
+    except Exception as e:
+        print(f"Error loading achievements background: {e}")
+        bg_img = pygame.Surface(screen.get_size())
+        bg_img.fill(BLACK)
+
     header_font = pygame.font.Font(None, 36)
     header_surface = header_font.render("ACHIEVEMENTS", True, WHITE)
     header_rect = pygame.Rect(0, 50, screen.get_width(), 60)
 
     back_btn = UIElement((screen.get_width() // 2, screen.get_height() - 80), "Back", 28, BLACK, WHITE, GameState.MENU)
 
-    # Load achievement images once (scale to 120x120)
-    for ach in achievements_data:
+    font_title = pygame.font.Font(None, 22)
+    font_desc = pygame.font.Font(None, 20)
+
+    # Tooltip function
+    def draw_tooltip(screen, text, pos, font):
         try:
-            img = pygame.image.load(ach["image"]).convert_alpha()
-            img = pygame.transform.scale(img, (120, 120))
-            ach["surf"] = img
+            max_width = 250
+            words = text.split(' ')
+            lines = []
+            line = ''
+            for word in words:
+                test_line = line + ' ' + word if line else word
+                if font.size(test_line)[0] > max_width:
+                    lines.append(line)
+                    line = word
+                else:
+                    line = test_line
+            lines.append(line)
+
+            padding = 8
+            tip_width = max(font.size(line)[0] for line in lines) + padding * 2
+            tip_height = len(lines) * font.get_height() + padding * 2
+            tooltip_box = pygame.Surface((tip_width, tip_height), pygame.SRCALPHA)
+            tooltip_box.fill((30, 30, 30, 220))
+
+            for i, line in enumerate(lines):
+                tooltip_box.blit(font.render(line, True, WHITE), (padding, padding + i * font.get_height()))
+
+            tip_x = min(pos[0] + 20, screen.get_width() - tip_width)
+            tip_y = min(pos[1] + 20, screen.get_height() - tip_height)
+            screen.blit(tooltip_box, (tip_x, tip_y))
         except Exception as e:
-            print(f"Error loading {ach['image']}: {e}")
-            ach["surf"] = pygame.Surface((120, 120))
-            ach["surf"].fill((100, 100, 100))
+            print(f"Tooltip render error: {e}")
 
     while True:
         mouse_up = False
+        mouse_pos = pygame.mouse.get_pos()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -479,9 +557,13 @@ def achievements(screen):
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_up = True
 
-        # Draw background and header
-        screen.fill(ORANGE)
-        pygame.draw.rect(screen, BLACK, header_rect)
+        # Draw background + overlay
+        screen.blit(bg_img, (0, 0))
+        overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 120))
+        screen.blit(overlay, (0, 0))
+
+        pygame.draw.rect(screen, WHITE, header_rect, 2)
         screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
 
         # Grid settings
@@ -491,51 +573,139 @@ def achievements(screen):
         columns = 3
         rows = (len(achievements_data) + columns - 1) // columns
 
-        # Calculate total grid width for centering
         total_grid_width = columns * ach_width + (columns - 1) * padding
         start_x = (screen.get_width() - total_grid_width) // 2
         start_y = 120
 
-        # Draw achievements in a grid
+        hovered_desc = None
+        tooltip_pos = (0, 0)
+
         for i, ach in enumerate(achievements_data):
             col = i % columns
             row = i // columns
             x = start_x + col * (ach_width + padding)
             y = start_y + row * (ach_height + 80)
 
-            # Draw the achievement image
-            screen.blit(ach["surf"], (x, y))
+            # Safe blit
+            try:
+                surf = ach.get("surf")
+                if not surf:
+                    surf = pygame.Surface((ach_width, ach_height))
+                    surf.fill((100, 100, 100))  # Placeholder grey
+                screen.blit(surf, (x, y))
+            except Exception as e:
+                print(f"Error drawing achievement {ach.get('title')}: {e}")
+                continue
 
             # Grey overlay if locked
-            if not ach["unlocked"]:
-                overlay = pygame.Surface(ach["surf"].get_size(), pygame.SRCALPHA)
-                overlay.fill((50, 50, 50, 150))
+            if not ach.get("unlocked", False):
+                overlay = pygame.Surface((ach_width, ach_height), pygame.SRCALPHA)
+                overlay.fill((50, 50, 50, 180))
                 screen.blit(overlay, (x, y))
 
-            # Draw description below
-            font = pygame.font.Font(None, 20)
-            desc_text = ach["description"] if ach["unlocked"] else "Locked"
-            text_surf = font.render(desc_text, True, WHITE)
-            text_rect = text_surf.get_rect(center=(x + ach_width // 2, y + ach_height + 15))
-            screen.blit(text_surf, text_rect)
+            # Title
+            title_surf = font_title.render(str(ach.get("title", "Unknown")), True, WHITE)
+            title_rect = title_surf.get_rect(center=(x + ach_width // 2, y + ach_height + 15))
+            screen.blit(title_surf, title_rect)
 
-        # Back button
-        action = back_btn.update(pygame.mouse.get_pos(), mouse_up)
+            # Hover tooltip
+            img_rect = pygame.Rect(x, y, ach_width, ach_height)
+            if img_rect.collidepoint(mouse_pos):
+                hovered_desc = str(ach.get("description", "No description"))
+                tooltip_pos = mouse_pos
+
+        if hovered_desc:
+            draw_tooltip(screen, hovered_desc, tooltip_pos, font_desc)
+
+        action = back_btn.update(mouse_pos, mouse_up)
         back_btn.draw(screen)
         if action == GameState.MENU:
             return GameState.MENU
 
         pygame.display.flip()
-        
+
+       
+
+def load_achievement_images():
+    global achievements_data
+    ach_width, ach_height = 120, 120  # match your grid size
+
+    for ach in achievements_data:
+        if "image_path" in ach:
+            try:
+                surf = pygame.image.load(ach["image_path"]).convert_alpha()
+                surf = pygame.transform.scale(surf, (ach_width, ach_height))
+                ach["surf"] = surf
+            except Exception as e:
+                print(f"Failed to load {ach['title']} image: {e}")
+                # fallback gray placeholder
+                surf = pygame.Surface((ach_width, ach_height))
+                surf.fill((100, 100, 100))
+                ach["surf"] = surf
+
+
 # About screen
 def about(screen):
+    try:
+        background_img = pygame.image.load("photos/background.png").convert()
+        background_img = pygame.transform.scale(background_img, screen.get_size())
+    except Exception as e:
+        print(f"Error loading background.png: {e}")
+        background_img = pygame.Surface(screen.get_size())
+        background_img.fill(ORANGE)
+
     clock = pygame.time.Clock()
 
     header_font = pygame.font.Font(None, 36)
     header_surface = header_font.render("About Haunted Meadow Brook", True, WHITE)
     header_rect = pygame.Rect(200, 50, 400, 60)
-    
+
     back_btn = UIElement((400, 500), "Back", 28, BLACK, WHITE, GameState.MENU)
+
+    # About text content
+    about_text = (
+        "Haunted Meadow Brook is a thrilling adventure game set in a mysterious mansion.\n\n"
+        "Explore every room, avoid ghosts, uncover secrets, and collect achievements. "
+        "Each area of the mansion holds challenges and surprises for brave players. "
+        "Immerse yourself in the eerie atmosphere and enjoy the unique soundtrack."
+    )
+
+    # Text box settings
+    text_box_rect = pygame.Rect(150, 150, screen.get_width() - 300, screen.get_height() - 250)
+    text_color = WHITE
+    font = pygame.font.Font(None, 24)
+    padding = 10
+
+    # Pre-render wrapped text to a surface
+    def render_text_surface(text, font, color, max_width):
+        words = text.split(' ')
+        lines = []
+        line = ''
+        for word in words:
+            test_line = line + ' ' + word if line else word
+            if font.size(test_line)[0] > max_width - padding * 2:
+                lines.append(line)
+                line = word
+            else:
+                line = test_line
+        lines.append(line)
+
+        text_height = len(lines) * (font.get_height() + 2)
+        surf = pygame.Surface((max_width, text_height), pygame.SRCALPHA)
+        surf.fill((0, 0, 0, 0))  # transparent
+
+        y_offset = 0
+        for line in lines:
+            line_surf = font.render(line, True, color)
+            surf.blit(line_surf, (padding, y_offset))
+            y_offset += font.get_height() + 2
+        return surf
+
+    text_surf = render_text_surface(about_text, font, text_color, text_box_rect.width)
+
+    scroll_y = 0
+    scroll_speed = 20
+    max_scroll = max(0, text_surf.get_height() - text_box_rect.height)
 
     while True:
         mouse_up = False
@@ -545,9 +715,33 @@ def about(screen):
                 return GameState.QUIT
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_up = True
+            # Scroll with mouse wheel
+            if event.type == pygame.MOUSEWHEEL:
+                scroll_y -= event.y * scroll_speed
+                scroll_y = max(0, min(scroll_y, max_scroll))
+
+        screen.blit(background_img, (0, 0))
+        pygame.draw.rect(screen, BLACK, header_rect)
+        screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
+
+        # Draw text box background
+        box_surf = pygame.Surface((text_box_rect.width, text_box_rect.height), pygame.SRCALPHA)
+        box_surf.fill((0, 0, 0, 180))  # semi-transparent
+        screen.blit(box_surf, text_box_rect.topleft)
+
+        # Draw the visible portion of the text surface
+        screen.blit(text_surf, (text_box_rect.x, text_box_rect.y), area=pygame.Rect(0, scroll_y, text_box_rect.width, text_box_rect.height))
+
+        action = back_btn.update(pygame.mouse.get_pos(), mouse_up)
+        back_btn.draw(screen)
+        if action == GameState.MENU:
+            return GameState.MENU
+
+        pygame.display.flip()
+        clock.tick(60)
                 
         # Draw screen
-        screen.fill(ORANGE)
+        screen.blit(background_img, (0, 0))
         pygame.draw.rect(screen, BLACK, header_rect)
         screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
         
@@ -634,6 +828,7 @@ def main():
         elif state == GameState.SETTINGS:
             state = settings(screen)
         elif state == GameState.ACHIEVEMENTS:
+            load_achievement_images()  # <-- load images first
             state = achievements(screen)
         elif state == GameState.ABOUT:
             state = about(screen)
@@ -641,21 +836,28 @@ def main():
             pygame.quit()
             return
 
-
 def menu(screen):
-    
     screen = pygame.display.set_mode(MENU_SIZE)
     
+    # Load menu background
+    try:
+        menu_background_img = pygame.image.load("photos/screen.png").convert()
+        menu_background_img = pygame.transform.scale(menu_background_img, MENU_SIZE)
+    except Exception as e:
+        print(f"Error loading screen.png: {e}")
+        menu_background_img = pygame.Surface(MENU_SIZE)
+        menu_background_img.fill(ORANGE)
+    
+    # Menu buttons
     buttons = [
-        UIElement((MENU_WIDTH/2, 280), "Start", 30, BLACK, WHITE, GameState.START),
-        UIElement((MENU_WIDTH/2, 340), "Settings", 26, BLACK, WHITE, GameState.SETTINGS),
-        UIElement((MENU_WIDTH/2, 400), "Achievements", 26, BLACK, WHITE, GameState.ACHIEVEMENTS),
-        UIElement((MENU_WIDTH/2, 460), "About", 26, BLACK, WHITE, GameState.ABOUT),
-        UIElement((MENU_WIDTH/2, 520), "Quit", 26, BLACK, WHITE, GameState.QUIT),
+        UIElement((MENU_WIDTH / 2, 280), "Start", 30, BLACK, WHITE, GameState.START),
+        UIElement((MENU_WIDTH / 2, 340), "Settings", 26, BLACK, WHITE, GameState.SETTINGS),
+        UIElement((MENU_WIDTH / 2, 400), "Achievements", 26, BLACK, WHITE, GameState.ACHIEVEMENTS),
+        UIElement((MENU_WIDTH / 2, 460), "About", 26, BLACK, WHITE, GameState.ABOUT),
+        UIElement((MENU_WIDTH / 2, 520), "Quit", 26, BLACK, WHITE, GameState.QUIT)
     ]
     
-    menu_background = pygame.Surface(MENU_SIZE)
-    menu_background_img = pygame.image.load("photos\\screen.png")
+    clock = pygame.time.Clock()
     
     while True:
         mouse_up = False
@@ -664,18 +866,19 @@ def menu(screen):
                 return GameState.QUIT
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_up = True
-
         
-        screen.fill(ORANGE)
+        # Draw background every frame
         screen.blit(menu_background_img, (0, 0))
-
+        
+        # Draw buttons and check for clicks
         for button in buttons:
             action = button.update(pygame.mouse.get_pos(), mouse_up)
             button.draw(screen)
             if action:
                 return action
-
+        
         pygame.display.flip()
+        clock.tick(60)
 
 
 def play_level(screen):

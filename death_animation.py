@@ -22,13 +22,14 @@ PLAYER_SIZE = (150, 190)
 GHOST_SIZE = (80, 100)
 
 # Colors
-BLACK = (0, 0, 0)
+BLACK = (0, 0, 0, 0)
 WHITE = (255, 255, 255)
 ORANGE = (255, 140, 0)
 
 # Global volume values
 MASTER_VOLUME = 0.8
 MUSIC_VOLUME = 0.6
+
 
 # Player movement
 SPEED = 6
@@ -508,11 +509,18 @@ def load_scaled(path, size):
 def main():
     global animations, player_image, player_rect
     global MASTER_VOLUME, MUSIC_VOLUME
+    global door_sound
 
     pygame.init()
     pygame.mixer.init()
+
+    door_sound = pygame.mixer.Sound("Sounds/door1.mp3")
+    door_sound.set_volume(random.uniform(0.3, 0.6))
+
     screen = pygame.display.set_mode((MENU_SIZE))
     pygame.display.set_caption("Haunted Meadow Brook")
+
+    
 
     # Load background music safely
     music_file = ("music&text/spooky_theme.mp3")
@@ -957,6 +965,7 @@ def play_level(screen):
             # Check if player hits a door
             door_hit = current_room.get_door_at(player.rect)
             if door_hit:
+                door_sound.play()  # play door sound
                 enter_room(rooms[door_hit['target_room']], door_hit['spawn_pos'])
             
             camera_group.box_target_camera(player, current_room.size)

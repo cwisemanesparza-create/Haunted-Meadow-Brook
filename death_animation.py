@@ -28,7 +28,7 @@ ORANGE = (255, 140, 0)
 
 # Achievements data # change to true when unlocked 
 achievements_data = [
-    {"image": "photos/achievements/Ac1.png", "description": "Description 1", "unlocked": False},
+    {"image": "photos/achievements/Ac1.png", "Party Time": "Grab a  upgrade", "unlocked": False},
     {"image": "photos/achievements/Ac2.png", "description": "Description 2", "unlocked": False},
     {"image": "photos/achievements/Ac3.png", "description": "Description 3", "unlocked": False},
     {"image": "photos/achievements/Ac4.png", "description": "Description 4", "unlocked": False},
@@ -455,15 +455,20 @@ def achievements(screen):
     
     header_font = pygame.font.Font(None, 36)
     header_surface = header_font.render("ACHIEVEMENTS", True, WHITE)
-    header_rect = pygame.Rect(200, 50, 400, 60)
+    header_rect = pygame.Rect(0, 50, screen.get_width(), 60)
 
-    back_btn = UIElement((400, 500), "Back", 28, BLACK, WHITE, GameState.MENU)
+    back_btn = UIElement((screen.get_width() // 2, screen.get_height() - 80), "Back", 28, BLACK, WHITE, GameState.MENU)
 
-    # Load achievement images once
+    # Load achievement images once (scale to 120x120)
     for ach in achievements_data:
-        img = pygame.image.load(ach["image"]).convert_alpha()
-        img = pygame.transform.scale(img, (120, 120))
-        ach["surf"] = img
+        try:
+            img = pygame.image.load(ach["image"]).convert_alpha()
+            img = pygame.transform.scale(img, (120, 120))
+            ach["surf"] = img
+        except Exception as e:
+            print(f"Error loading {ach['image']}: {e}")
+            ach["surf"] = pygame.Surface((120, 120))
+            ach["surf"].fill((100, 100, 100))
 
     while True:
         mouse_up = False
@@ -474,39 +479,47 @@ def achievements(screen):
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_up = True
 
-        # Draw screen
+        # Draw background and header
         screen.fill(ORANGE)
         pygame.draw.rect(screen, BLACK, header_rect)
         screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
+
+        # Grid settings
+        padding = 50
+        ach_width = 120
+        ach_height = 120
+        columns = 3
+        rows = (len(achievements_data) + columns - 1) // columns
+
+        # Calculate total grid width for centering
+        total_grid_width = columns * ach_width + (columns - 1) * padding
+        start_x = (screen.get_width() - total_grid_width) // 2
+        start_y = 120
 
         # Draw achievements in a grid
-        start_x, start_y = 100, 120
-        padding = 50
         for i, ach in enumerate(achievements_data):
-            x = start_x + (i % 3) * (ach["surf"].get_width() + padding)
-            y = start_y + (i // 3) * (ach["surf"].get_height() + 80)
+            col = i % columns
+            row = i // columns
+            x = start_x + col * (ach_width + padding)
+            y = start_y + row * (ach_height + 80)
 
+            # Draw the achievement image
             screen.blit(ach["surf"], (x, y))
 
-            # Draw grey overlay if locked
+            # Grey overlay if locked
             if not ach["unlocked"]:
                 overlay = pygame.Surface(ach["surf"].get_size(), pygame.SRCALPHA)
-                overlay.fill((50, 50, 50, 150))  # Grey + alpha
+                overlay.fill((50, 50, 50, 150))
                 screen.blit(overlay, (x, y))
 
-            # Draw placeholder description below image
+            # Draw description below
             font = pygame.font.Font(None, 20)
-            desc = ach["description"] if ach["unlocked"] else "Locked"
-            text_surf = font.render(desc, True, WHITE)
-            text_rect = text_surf.get_rect(center=(x + ach["surf"].get_width() // 2, y + ach["surf"].get_height() + 15))
+            desc_text = ach["description"] if ach["unlocked"] else "Locked"
+            text_surf = font.render(desc_text, True, WHITE)
+            text_rect = text_surf.get_rect(center=(x + ach_width // 2, y + ach_height + 15))
             screen.blit(text_surf, text_rect)
 
-                
-        # Draw screen
-        screen.fill(ORANGE)
-        pygame.draw.rect(screen, BLACK, header_rect)
-        screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
-        
+        # Back button
         action = back_btn.update(pygame.mouse.get_pos(), mouse_up)
         back_btn.draw(screen)
         if action == GameState.MENU:

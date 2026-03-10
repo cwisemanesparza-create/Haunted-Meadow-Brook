@@ -26,6 +26,14 @@ BLACK = (0, 0, 0, 0)
 WHITE = (255, 255, 255)
 ORANGE = (255, 140, 0)
 
+# Achievements data # change to true when unlocked 
+achievements_data = [
+    {"image": "photos/achievements/Ac1.png", "description": "Description 1", "unlocked": False},
+    {"image": "photos/achievements/Ac2.png", "description": "Description 2", "unlocked": False},
+    {"image": "photos/achievements/Ac3.png", "description": "Description 3", "unlocked": False},
+    {"image": "photos/achievements/Ac4.png", "description": "Description 4", "unlocked": False},
+    {"image": "photos/achievements/Ac5.png", "description": "Description 5", "unlocked": False},
+
 # Global volume values
 MASTER_VOLUME = 0.8
 MUSIC_VOLUME = 0.6
@@ -442,12 +450,19 @@ def settings(screen):
 
 # Achievements screen
 def achievements(screen):
-
+    global achievements_data
+    
     header_font = pygame.font.Font(None, 36)
     header_surface = header_font.render("ACHIEVEMENTS", True, WHITE)
     header_rect = pygame.Rect(200, 50, 400, 60)
 
     back_btn = UIElement((400, 500), "Back", 28, BLACK, WHITE, GameState.MENU)
+
+    # Load achievement images once
+    for ach in achievements_data:
+        img = pygame.image.load(ach["image"]).convert_alpha()
+        img = pygame.transform.scale(img, (120, 120))
+        ach["surf"] = img
 
     while True:
         mouse_up = False
@@ -457,6 +472,34 @@ def achievements(screen):
                 return GameState.QUIT
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_up = True
+
+        # Draw screen
+        screen.fill(ORANGE)
+        pygame.draw.rect(screen, BLACK, header_rect)
+        screen.blit(header_surface, header_surface.get_rect(center=header_rect.center))
+
+        # Draw achievements in a grid
+        start_x, start_y = 100, 120
+        padding = 50
+        for i, ach in enumerate(achievements_data):
+            x = start_x + (i % 3) * (ach["surf"].get_width() + padding)
+            y = start_y + (i // 3) * (ach["surf"].get_height() + 80)
+
+            screen.blit(ach["surf"], (x, y))
+
+            # Draw grey overlay if locked
+            if not ach["unlocked"]:
+                overlay = pygame.Surface(ach["surf"].get_size(), pygame.SRCALPHA)
+                overlay.fill((50, 50, 50, 150))  # Grey + alpha
+                screen.blit(overlay, (x, y))
+
+            # Draw placeholder description below image
+            font = pygame.font.Font(None, 20)
+            desc = ach["description"] if ach["unlocked"] else "Locked"
+            text_surf = font.render(desc, True, WHITE)
+            text_rect = text_surf.get_rect(center=(x + ach["surf"].get_width() // 2, y + ach["surf"].get_height() + 15))
+            screen.blit(text_surf, text_rect)
+
                 
         # Draw screen
         screen.fill(ORANGE)

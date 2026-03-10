@@ -33,6 +33,7 @@ achievements_data = [
     {"image": "photos/achievements/Ac3.png", "description": "Description 3", "unlocked": False},
     {"image": "photos/achievements/Ac4.png", "description": "Description 4", "unlocked": False},
     {"image": "photos/achievements/Ac5.png", "description": "Description 5", "unlocked": False},
+]
 
 # Global volume values
 MASTER_VOLUME = 0.8

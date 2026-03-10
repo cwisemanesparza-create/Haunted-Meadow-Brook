@@ -53,7 +53,7 @@ achievements_data = [
         "image_path": "photos/achievements/Ac6.png"
     },
     {
-        "title": "First Kill",
+        "title": "First Capture",
         "description": "Capture your first ghost.",
         "unlocked": False,
         "image_path": "photos/achievements/Ac5.png"
@@ -63,6 +63,12 @@ achievements_data = [
         "description": "Beat the game.",
         "unlocked": False,
         "image_path": "photos/achievements/Ac4.png"
+    },
+     {
+        "title": "Let's get the Party Started",
+        "description": "Open the game.",
+        "unlocked": True,
+        "image_path": "photos/achievements/Ac7.png"
     }
 ]
 
@@ -451,7 +457,7 @@ def settings(screen):
     global MASTER_VOLUME, MUSIC_VOLUME
     clock = pygame.time.Clock()
 
-    header_font = pygame.font.Font(None, 36)
+    header_font = pygame.font.Font(None, 50)
     header_surface = header_font.render("AUDIO SETTINGS", True, WHITE)
     header_rect = pygame.Rect(200, 50, 400, 60)
 
@@ -673,7 +679,7 @@ def about(screen):
     # Text box settings
     text_box_rect = pygame.Rect(150, 150, screen.get_width() - 300, screen.get_height() - 250)
     text_color = WHITE
-    font = pygame.font.Font(None, 24)
+    font = pygame.font.Font(None, 36)
     padding = 10
 
     # Pre-render wrapped text to a surface
@@ -690,7 +696,7 @@ def about(screen):
                 line = test_line
         lines.append(line)
 
-        text_height = len(lines) * (font.get_height() + 2)
+        text_height = len(lines) * (font.get_height() + 9)
         surf = pygame.Surface((max_width, text_height), pygame.SRCALPHA)
         surf.fill((0, 0, 0, 0))  # transparent
 

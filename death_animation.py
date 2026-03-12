@@ -1,4 +1,5 @@
-import pygame, sys
+
+import pygame
 import pygame.freetype
 import random, math
 import os
@@ -174,14 +175,12 @@ class Slider:
         
 # Room class
 class Room:
-    def __init__(self, bg_path, size, doors=None, ghosts=None, viewport=None, supplies=None):
+    def __init__(self, bg_path, size, doors=None, ghosts=None, viewport=None):
         self.bg_surf = load_scaled(bg_path, size)
         self.bg_rect = self.bg_surf.get_rect(topleft=(0, 0))
         self.doors = doors or {}  # {door_name: {'rect': pygame.Rect, 'target_room': str, 'spawn_pos': (x, y)}}
         self.ghosts = ghosts or []
         self.size = size
-        self.supplies = supplies or []
-
         
         # if the caller supplied a viewport, otherwise clamp to the maximum allowed
         if viewport is None:
@@ -283,7 +282,7 @@ class Camera(pygame.sprite.Group):
         self.internal_surf.blit(room.bg_surf, (0, 0), (self.offset.x, self.offset.y, self.viewport_width, self.viewport_height))
         
         # Draw player and ghosts to internal_surf
-        all_sprites = [player] + room.ghosts + room.supplies
+        all_sprites = [player] + room.ghosts
         for sprite in sorted(all_sprites, key=lambda s: s.rect.centery):
             offset_pos = sprite.rect.topleft - self.offset + self.internal_offset
             self.internal_surf.blit(sprite.image, offset_pos)
@@ -458,8 +457,6 @@ def settings(screen):
 
     global MASTER_VOLUME, MUSIC_VOLUME
     clock = pygame.time.Clock()
-
-    hallway_A = Room("hallway_A", width=800, height=600)
 
     header_font = pygame.font.Font(None, 50)
     header_surface = header_font.render("AUDIO SETTINGS", True, WHITE)
@@ -894,7 +891,6 @@ def menu(screen):
 def play_level(screen):
     global current_direction, current_frame, frame_timer
     global walk_timer, walk_offset
-    global animations
     
     pygame.init()
     pygame.mixer.init()
@@ -902,24 +898,6 @@ def play_level(screen):
     clock = pygame.time.Clock()
     
     rooms = {}
-
-    # --------- PARTY SUPPLY SPAWN ---------
-
-    hallway_A.supplies = []
-    dining_room.supplies = []
-    alfred_study.supplies = []
-    matilda_study.supplies = []
-
-    supplies_collected = 0
-
-    for supply in current_room.supplies[:]:
-        if player.rect.colliderect(supply.rect):
-            current_room.supplies.remove(supply)
-            supplies_collected += 1
-            print("Supplies:", supplies_collected)
-
-            if supplies_collected >= 10:
-                achievements_data[1]["unlocked"] = True
     
     # Set initial room temporarily to get viewport
     temp_room = Room(
@@ -940,16 +918,6 @@ def play_level(screen):
     ghost_img = pygame.image.load("photos\\grizzly_photos\\grizzly_ghost.png").convert_alpha()
     ghost_img = pygame.transform.scale(ghost_img, (GHOST_SIZE))
     
-    # Load party supply images
-    party_supply_images = [
-    pygame.image.load("Party_supplies/Ps1.png").convert_alpha(),
-    pygame.image.load("Party_supplies/Ps2.png").convert_alpha(),
-    pygame.image.load("Party_supplies/Ps3.png").convert_alpha()
-]
-
-    # Scale Items
-    party_supply_images = [pygame.transform.scale(img, (60, 60)) for img in party_supply_images]
-
     # Create separate ghosts for each room
     hallwayA_ghost_room = pygame.Rect(0, 0, 3600, 700)
     hallwayA_ghosts = [
@@ -999,18 +967,6 @@ def play_level(screen):
             group=camera_group  
         )
     ]
-
-    #Party Supply Class
-
-    class PartySupply(pygame.sprite.Sprite):
-        def __init__(self, pos, image):
-            super().__init__()
-            self.image = image
-            self.rect = self.image.get_rect(center=pos)
-            self.collected = False
-
-        def collect(self):
-            self.collected = True
     
     # Create rooms with their own ghosts
     hallway_A = Room(
@@ -1086,44 +1042,23 @@ def play_level(screen):
         "alfred_study": alfred_study,
         "matilda_study": matilda_study
     }
-
-    # Initialize supplies lists
-    hallway_A.supplies = []
-    dining_room.supplies = []
-    alfred_study.supplies = []
-    matilda_study.supplies = []
-
-# Spawn party supplies
-    spawn_supplies(hallway_A, 1)
-    spawn_supplies(dining_room, 1)
-    spawn_supplies(alfred_study, 1)
-    spawn_supplies(matilda_study, 1)
     
     # Set initial current room
     current_room = hallway_A
     
-
-def spawn_supplies(room, amount):
-    for i in range(amount):
-        x = random.randint(150, room.size[0] - 150)
-        y = random.randint(150, room.size[1] - 150)
-
-        img = random.choice(party_supply_images)
-
-        supply = PartySupply((x, y), img)
-        room.supplies.append(supply)
-
-# spawn items in each room
-
-
     # Create player
-player = Player(
+    player = Player(
         image=animations["forward"][0],
         pos=(current_room.viewport[0] // 2, current_room.viewport[1] // 2),
         group=camera_group
     )
+    
+    player.dead = False
+    player.death_finished = False
+    player.death_frame = 0
+    
     #PAUSE BUTTON
-pause_button = UIElement(
+    pause_button = UIElement(
         center_position=(current_room.viewport[0] - 60, 40),
         text="II",
         font_size=26,
@@ -1132,7 +1067,7 @@ pause_button = UIElement(
         action="PAUSE"
     )
     
-retry_btn = UIElement(
+    retry_btn = UIElement(
     (current_room.viewport[0]//2, current_room.viewport[1]//2 + 120),
     "Retry",
     30,
@@ -1141,7 +1076,7 @@ retry_btn = UIElement(
     GameState.START
     )
     
-menu_btn = UIElement(
+    menu_btn = UIElement(
     (current_room.viewport[0]//2, current_room.viewport[1]//2 + 190),
     "Main Menu",
     30,
@@ -1151,25 +1086,15 @@ menu_btn = UIElement(
 )
     
     # Define enter_room function
-def enter_room(room, spawn_pos):
-    global current_room
-    current_room = room
-    player.rect.center = spawn_pos
-
-    # push the player out of doors
-    for info in room.doors.values():
-        if player.rect.colliderect(info['rect']):
-            player.rect.bottom = info['rect'].top - 1
-
-    # Adjust pause button for new viewport
-    viewport_width, viewport_height = current_room.viewport
-    screen = pygame.display.set_mode((viewport_width, viewport_height))
-    pause_button.rects[0].center = (viewport_width - 60, 40)
-    pause_button.rects[1].center = (viewport_width - 60, 40)
+    def enter_room(room, spawn_pos):
+        nonlocal player, current_room, pause_button, camera_group
+        
+        current_room = room
+        player.rect.center = spawn_pos
         
         # push the player out of any door they happen to land in
-for info in room.doors.values():
-        if player.rect.colliderect(info['rect']):
+        for info in room.doors.values():
+            if player.rect.colliderect(info['rect']):
                 player.rect.bottom = info['rect'].top - 1   # for example
         
         viewport_width, viewport_height = current_room.viewport
@@ -1185,213 +1110,136 @@ for info in room.doors.values():
         camera_group.offset.x = camera_group.camera_rect.x - camera_group.camera_borders["left"]
         camera_group.offset.y = camera_group.camera_rect.y - camera_group.camera_borders["top"]
     
+    while True:
+        dt = clock.tick(60)
+        
+        mouse_up = False
 
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return GameState.QUIT
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                mouse_up = True
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                paused = not paused
+                return GameState.MENU
+        
+        if player.dead:
+            player.death_frame_timer += dt
+            
+            if not player.death_finished:
+                if player.death_frame_timer >= DEATH_FRAME_DELAY:
+                    player.death_frame += 1
+                    player.death_frame_timer = 0
+                    
+                    if player.death_frame >= len(animations["death"]):
+                        player.death_frame = len(animations["death"]) - 1
+                        player.death_finished = True
+                        
+            frame = pygame.transform.scale(animations["death"][player.death_frame], screen.get_size())
+            screen.blit(frame, (0, 0))
+            
+            if player.death_finished:
+                w, h = screen.get_size()
 
-while True:
-    dt = clock.tick(60)
-    mouse_up = False
+                retry_btn.rects[0].center = (w//2, h//2 + 120)
+                retry_btn.rects[1].center = (w//2, h//2 + 120)
 
-    # ---------------- EVENTS ----------------
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-           running = False
-           break
+                menu_btn.rects[0].center = (w//2, h//2 + 190)
+                menu_btn.rects[1].center = (w//2, h//2 + 190)
 
-        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            mouse_up = True
+                action = retry_btn.update(pygame.mouse.get_pos(), mouse_up)
+                retry_btn.draw(screen)
 
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                action2 = menu_btn.update(pygame.mouse.get_pos(), mouse_up)
+                menu_btn.draw(screen)
+
+                if action == GameState.START:
+                    player.reset((current_room.viewport[0] // 2, current_room.viewport[1] // 2))
+                    for ghost in current_room.ghosts:
+                        ghost.reset()
+                    continue
+                
+
+                if action2 == GameState.MENU:
+                    return GameState.MENU
+            pygame.display.update()
+            continue
+            
+        # Update pause button
+        action = pause_button.update(pygame.mouse.get_pos(), mouse_up)
+        if action == "PAUSE":
             paused = not paused
-
-
-    # ---------------- PLAYER DEATH ----------------
-    if player.dead:
-
-        player.death_frame_timer += dt
-
-        if not player.death_finished:
-            if player.death_frame_timer >= DEATH_FRAME_DELAY:
-                player.death_frame += 1
-                player.death_frame_timer = 0
-
-                if player.death_frame >= len(animations["death"]):
-                    player.death_frame = len(animations["death"]) - 1
-                    player.death_finished = True
-
-        frame = pygame.transform.scale(
-            animations["death"][player.death_frame],
-            screen.get_size()
-        )
-
-        screen.blit(frame, (0, 0))
-
-        if player.death_finished:
-
-            w, h = screen.get_size()
-
-            retry_btn.rects[0].center = (w//2, h//2 + 120)
-            retry_btn.rects[1].center = (w//2, h//2 + 120)
-
-            menu_btn.rects[0].center = (w//2, h//2 + 190)
-            menu_btn.rects[1].center = (w//2, h//2 + 190)
-
-            action = retry_btn.update(pygame.mouse.get_pos(), mouse_up)
-            retry_btn.draw(screen)
-
-            action2 = menu_btn.update(pygame.mouse.get_pos(), mouse_up)
-            menu_btn.draw(screen)
-
-            if action == GameState.START:
-
-                player.reset(
-                    (current_room.viewport[0] // 2,
-                     current_room.viewport[1] // 2)
-                )
-
-                for ghost in current_room.ghosts:
-                    ghost.reset()
-
-                continue
-
-            if action2 == GameState.MENU:
-                running = False
-                break
-
-        pygame.display.update()
-        continue
-
-
-    # ---------------- PAUSE BUTTON ----------------
-    action = pause_button.update(pygame.mouse.get_pos(), mouse_up)
-
-    if action == "PAUSE":
-        paused = not paused
-
-
-    # ---------------- PAUSE SCREEN ----------------
-    if paused:
-
-        overlay = pygame.Surface(current_room.viewport, pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 160))
-        screen.blit(overlay, (0, 0))
-
-        pause_text = create_surface_with_text(
-            "PAUSED",
-            48,
-            WHITE,
-            (0, 0, 0, 0)
-        )
-
-        screen.blit(
-            pause_text,
-            pause_text.get_rect(
-                center=(
-                    current_room.viewport[0] // 2,
-                    current_room.viewport[1] // 2
-                )
-            )
-        )
-
-    else:
-
-        # ---------------- PLAYER INPUT ----------------
-        keys = pygame.key.get_pressed()
-        moving = False
-
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            player.direction.x = -1
-            current_direction = "left"
-            moving = True
-
-        elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            player.direction.x = 1
-            current_direction = "right"
-            moving = True
+            
+        # Draw pause overlay if paused
+        if paused:
+            overlay = pygame.Surface(current_room.viewport, pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 160))
+            screen.blit(overlay, (0, 0))
+            pause_text = create_surface_with_text("PAUSED", 48, WHITE, (0, 0, 0, 0))
+            screen.blit(pause_text, pause_text.get_rect(center=(current_room.viewport[0] // 2, current_room.viewport[1] // 2)))
+            
         else:
-            player.direction.x = 0
+            keys = pygame.key.get_pressed()
+            moving = False
 
+            if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+                player.direction.x = -1
+                current_direction = "left"
+                moving = True
+            elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+                player.direction.x = 1
+                current_direction = "right"
+                moving = True
+            else:
+                player.direction.x = 0
+                
+            if keys[pygame.K_w] or keys[pygame.K_UP]:
+                player.direction.y = -1
+                current_direction = "back"
+                moving = True
+            elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
+                player.direction.y = 1
+                current_direction = "forward"
+                moving = True
+            else:
+                player.direction.y = 0
 
-        if keys[pygame.K_w] or keys[pygame.K_UP]:
-            player.direction.y = -1
-            current_direction = "back"
-            moving = True
+            if moving:
+                frame_timer += dt
+                walk_timer += dt
 
-        elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            player.direction.y = 1
-            current_direction = "forward"
-            moving = True
-        else:
-            player.direction.y = 0
+                if frame_timer >= FRAME_DELAY:
+                    current_frame = (current_frame + 1) % 4
+                    frame_timer = 0
 
-
-        # ---------------- WALK ANIMATION ----------------
-        if moving:
-
-            frame_timer += dt
-            walk_timer += dt
-
-            if frame_timer >= FRAME_DELAY:
-                current_frame = (current_frame + 1) % 4
+                if walk_timer >= BOB_DELAY:
+                    walk_offset = -BOB_AMOUNT if walk_offset == 0 else 0
+                    walk_timer = 0
+            else:
+                current_frame = 0
                 frame_timer = 0
+                walk_offset = 0
 
-            if walk_timer >= BOB_DELAY:
-                walk_offset = -BOB_AMOUNT if walk_offset == 0 else 0
-                walk_timer = 0
+            player.image = animations[current_direction][current_frame]
+            for ghost in current_room.ghosts:
+                ghost.update(dt, player)
+            
+            # Clamp player to room bounds
+            player.rect.clamp_ip(current_room.bg_rect)
+            player.update()
+            
+            # Check if player hits a door
+            door_hit = current_room.get_door_at(player.rect)
+            if door_hit:
+                door_sound.play()  # play door sound
+                enter_room(rooms[door_hit['target_room']], door_hit['spawn_pos'])
+            
+            camera_group.box_target_camera(player, current_room.size)
+            camera_group.custom_draw(player, current_room)
 
-        else:
-            current_frame = 0
-            frame_timer = 0
-            walk_offset = 0
+        pause_button.draw(screen)
+        pygame.display.update()
 
-
-        player.image = animations[current_direction][current_frame]
-
-
-        # ---------------- UPDATE GHOSTS ----------------
-        for ghost in current_room.ghosts:
-            ghost.update(dt, player)
-
-
-        # ---------------- COLLECT SUPPLIES ----------------
-        for supply in current_room.supplies[:]:
-
-            if player.rect.colliderect(supply.rect):
-
-                current_room.supplies.remove(supply)
-                supplies_collected += 1
-
-                # Unlock Treasure Hunter achievement
-                if supplies_collected >= 10:
-                    achievements_data[1]["unlocked"] = True
-
-
-        # ---------------- PLAYER MOVEMENT ----------------
-        player.rect.clamp_ip(current_room.bg_rect)
-        player.update()
-
-
-        # ---------------- DOOR COLLISION ----------------
-        door_hit = current_room.get_door_at(player.rect)
-
-        if door_hit:
-
-            door_sound.play()
-
-            enter_room(
-                rooms[door_hit['target_room']],
-                door_hit['spawn_pos']
-            )
-
-
-        # ---------------- CAMERA DRAW ----------------
-        camera_group.box_target_camera(player, current_room.size)
-        camera_group.custom_draw(player, current_room)
-
-
-    # ---------------- UI DRAW ----------------
-    pause_button.draw(screen)
-
-    pygame.display.update()
-
-pygame.quit()
-sys.exit()
+if __name__ == "__main__":
+    main()

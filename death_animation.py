@@ -175,12 +175,13 @@ class Slider:
         
 # Room class
 class Room:
-    def __init__(self, bg_path, size, doors=None, ghosts=None, viewport=None):
+    def __init__(self, bg_path, size, doors=None, ghosts=None, collectibles=None, viewport=None):
         self.bg_surf = load_scaled(bg_path, size)
         self.bg_rect = self.bg_surf.get_rect(topleft=(0, 0))
         self.doors = doors or {}  # {door_name: {'rect': pygame.Rect, 'target_room': str, 'spawn_pos': (x, y)}}
         self.ghosts = ghosts or []
         self.size = size
+        self.collectibles = collectibles or []
         
         # if the caller supplied a viewport, otherwise clamp to the maximum allowed
         if viewport is None:
@@ -282,10 +283,13 @@ class Camera(pygame.sprite.Group):
         self.internal_surf.blit(room.bg_surf, (0, 0), (self.offset.x, self.offset.y, self.viewport_width, self.viewport_height))
         
         # Draw player and ghosts to internal_surf
-        all_sprites = [player] + room.ghosts
+        all_sprites = [player] + room.ghosts + room.collectibles
         for sprite in sorted(all_sprites, key=lambda s: s.rect.centery):
             offset_pos = sprite.rect.topleft - self.offset + self.internal_offset
-            self.internal_surf.blit(sprite.image, offset_pos)
+            if isinstance(sprite, Collectible):
+                sprite.draw(self.internal_surf, self.offset)
+            else:
+                self.internal_surf.blit(sprite.image, sprite.rect.topleft - self.offset + self.internal_offset)
 
         scaled_surf = pygame.transform.scale(self.internal_surf, self.internal_surface_size_vector * self.zoom_scale)
         scaled_rect = scaled_surf.get_rect(center=(self.half_w, self.half_h))
@@ -433,6 +437,52 @@ class Ghost(pygame.sprite.Sprite):
         self.rect.center = (round(self.home_pos.x), round(self.home_pos.y))
         self.state = "wander"
         self.timer = random.randint(400,1200)
+
+class Collectible(pygame.sprite.Sprite):
+    def __init__(self, pos, image, group):
+        super().__init__(group)
+        self.image = image
+        self.rect = self.image.get_rect(center=pos)
+        self.collected = False
+
+        # Create a glow effect
+        glow_radius = max(self.rect.width, self.rect.height)
+        glow_surf = pygame.Surface((glow_radius*2, glow_radius*2), pygame.SRCALPHA)
+        pygame.draw.circle(glow_surf, (255, 255, 0, 60), (glow_radius, glow_radius), glow_radius)
+        glow_surf = pygame.transform.smoothscale(glow_surf, (glow_radius, glow_radius))
+        self.glow = glow_surf
+        self.glow_rect = self.glow.get_rect(center=self.rect.center)
+
+    def collect(self):
+        self.collected = True
+        self.kill()     
+
+    def draw(self, surface, offset):
+        # Draw glow first
+        self.glow_rect.center = self.rect.center - offset
+        surface.blit(self.glow, self.glow_rect)
+        # Draw actual collectible image
+        surface.blit(self.image, self.rect.topleft - offset)
+
+class FloatingText:
+    def __init__(self, text, pos, color=(255, 255, 0), lifespan=60, rise_speed=1.5, font_size=24):
+        self.text = text
+        self.pos = pygame.math.Vector2(pos)
+        self.color = color
+        self.lifespan = lifespan  # frames before disappearing
+        self.rise_speed = rise_speed
+        self.font = pygame.font.Font(None, font_size)
+
+    def update(self):
+        """Move the text upward and decrease lifespan."""
+        self.pos.y -= self.rise_speed
+        self.lifespan -= 1
+        return self.lifespan > 0  # True if still alive
+
+    def draw(self, surface):
+        text_surf = self.font.render(self.text, True, self.color)
+        rect = text_surf.get_rect(center=(self.pos.x, self.pos.y))
+        surface.blit(text_surf, rect)
 
 # Game states
 class GameState(Enum):
@@ -744,6 +794,8 @@ def about(screen):
         if action == GameState.MENU:
             return GameState.MENU
 
+
+
         pygame.display.flip()
         clock.tick(60)
                 
@@ -896,6 +948,8 @@ def play_level(screen):
     pygame.mixer.init()
     paused = False
     clock = pygame.time.Clock()
+    collected_items = 0
+    floating_texts = []
     
     rooms = {}
     
@@ -918,6 +972,34 @@ def play_level(screen):
     ghost_img = pygame.image.load("photos\\grizzly_photos\\grizzly_ghost.png").convert_alpha()
     ghost_img = pygame.transform.scale(ghost_img, (GHOST_SIZE))
     
+    # Load Party Supplies image
+
+    def random_position(room_size, margin=100):
+        x = random.randint(margin, room_size[0] - margin)
+        y = random.randint(margin, room_size[1] - margin)
+        return (x, y)
+
+    ps1_img = load_scaled("photos/party_supplies/Ps1.png", (80,80))
+    ps2_img = load_scaled("photos/party_supplies/Ps2.png", (80,80))
+    ps3_img = load_scaled("photos/party_supplies/Ps3.png", (80,80))
+    ps4_img = load_scaled("photos/party_supplies/Ps4.png", (80,80))
+    ps5_img = load_scaled("photos/party_supplies/Ps5.png", (80,80))
+
+    hallway_collectibles = [
+    Collectible(random_position((3600,700)), ps1_img, camera_group),
+    Collectible(random_position((3600,700)), ps2_img, camera_group)
+]
+    dining_collectibles = [
+    Collectible(random_position((1000,900)), ps3_img, camera_group)
+]
+    alfred_collectibles = [
+    Collectible(random_position((900,900)), ps4_img, camera_group)
+]
+    matilda_collectibles = [
+    Collectible(random_position((900,900)), ps5_img, camera_group)
+]
+    
+
     # Create separate ghosts for each room
     hallwayA_ghost_room = pygame.Rect(0, 0, 3600, 700)
     hallwayA_ghosts = [
@@ -990,6 +1072,7 @@ def play_level(screen):
             }
         },
         ghosts=hallwayA_ghosts,
+        collectibles=hallway_collectibles,
         viewport=(1500, 700)
     )
 
@@ -1004,6 +1087,7 @@ def play_level(screen):
             }
         },
         ghosts=dining_ghosts,
+        collectibles=dining_collectibles,
         viewport=(1000, 700)
     )
     
@@ -1018,6 +1102,7 @@ def play_level(screen):
             }
         },
         ghosts=alfred_study_ghosts,
+        collectibles=alfred_collectibles,
         viewport=(900, 700)
     )
     
@@ -1032,6 +1117,7 @@ def play_level(screen):
             }
         },
         ghosts=matilda_study_ghosts,
+        collectibles=matilda_collectibles,
         viewport=(900, 700)
     )
     
@@ -1229,14 +1315,37 @@ def play_level(screen):
             player.rect.clamp_ip(current_room.bg_rect)
             player.update()
             
+           # COLLECTIBLE COLLISION
+        for item in current_room.collectibles[:]:
+            if player.rect.colliderect(item.rect):
+                item.collect()
+                current_room.collectibles.remove(item)
+                collected_items += 1
+                floating_texts.append(FloatingText("+1", item.rect.center))
+                print("Collected:", collected_items)
+
+            # ACHIEVEMENT CHECK
+        if collected_items >= 10:
+            achievements_data[1]["unlocked"] = True
+
             # Check if player hits a door
-            door_hit = current_room.get_door_at(player.rect)
-            if door_hit:
-                door_sound.play()  # play door sound
-                enter_room(rooms[door_hit['target_room']], door_hit['spawn_pos'])
+        door_hit = current_room.get_door_at(player.rect)
+        if door_hit:
+            door_sound.play()  # play door sound
+            enter_room(rooms[door_hit['target_room']], door_hit['spawn_pos'])
             
-            camera_group.box_target_camera(player, current_room.size)
-            camera_group.custom_draw(player, current_room)
+        camera_group.box_target_camera(player, current_room.size)
+        camera_group.custom_draw(player, current_room)
+        
+        # Update floating text
+        for ft in floating_texts[:]:
+            if not ft.update():  
+                floating_texts.remove(ft)
+            
+            # Draw floating text
+
+        for ft in floating_texts:
+            ft.draw(screen)
 
         pause_button.draw(screen)
         pygame.display.update()

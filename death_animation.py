@@ -1,4 +1,3 @@
-
 import pygame
 import pygame.freetype
 import random, math
@@ -23,11 +22,32 @@ PLAYER_SIZE = (150, 190)
 GHOST_SIZE = (80, 100)
 
 # Colors
-BLACK = (0, 0, 0, 0)
+CLEAR = (0, 0, 0, 0) # transparent
+BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 ORANGE = (255, 140, 0)
 
-# Achievements data # change to true when unlocked 
+
+# Global volume values
+MASTER_VOLUME = 0.8
+MUSIC_VOLUME = 0.6
+
+# Player movement
+SPEED = 6
+walk_offset = 0
+walk_timer = 0
+BOB_DELAY = 120
+BOB_AMOUNT = 3
+current_direction = "forward"
+current_frame = 0
+frame_timer = 0
+FRAME_DELAY = 110
+
+# Death Animation timers
+FRAME_DELAY = 110
+DEATH_FRAME_DELAY = 300
+
+# Achievements data, change to true when unlocked 
 achievements_data = [
     {
         "title": "Speed Runner",
@@ -72,27 +92,6 @@ achievements_data = [
         "image_path": "photos/achievements/Ac7.png"
     }
 ]
-
-# Global volume values
-MASTER_VOLUME = 0.8
-MUSIC_VOLUME = 0.6
-
-
-# Player movement
-SPEED = 6
-walk_offset = 0
-walk_timer = 0
-BOB_DELAY = 120
-BOB_AMOUNT = 3
-current_direction = "forward"
-current_frame = 0
-frame_timer = 0
-FRAME_DELAY = 110
-
-# Death Animation timers
-FRAME_DELAY = 110
-DEATH_FRAME_DELAY = 300
-
 
 # Helper function
 def create_surface_with_text(text, font_size, text_rgb, bg_rgb, padding=12):
@@ -175,13 +174,14 @@ class Slider:
         
 # Room class
 class Room:
-    def __init__(self, bg_path, size, doors=None, ghosts=None, collectibles=None, viewport=None):
+    def __init__(self, bg_path, size, doors=None, ghosts=None, collectibles=None, viewport=None, respawn_pos=None):
         self.bg_surf = load_scaled(bg_path, size)
         self.bg_rect = self.bg_surf.get_rect(topleft=(0, 0))
+        self.size = size
         self.doors = doors or {}  # {door_name: {'rect': pygame.Rect, 'target_room': str, 'spawn_pos': (x, y)}}
         self.ghosts = ghosts or []
-        self.size = size
         self.collectibles = collectibles or []
+        self.respawn_pos = respawn_pos # (x, y)
         
         # if the caller supplied a viewport, otherwise clamp to the maximum allowed
         if viewport is None:
@@ -282,14 +282,15 @@ class Camera(pygame.sprite.Group):
         # Draw room background to internal_surf
         self.internal_surf.blit(room.bg_surf, (0, 0), (self.offset.x, self.offset.y, self.viewport_width, self.viewport_height))
         
-        # Draw player and ghosts to internal_surf
+        # Draw player, ghosts, and collectibles to internal_surf
         all_sprites = [player] + room.ghosts + room.collectibles
         for sprite in sorted(all_sprites, key=lambda s: s.rect.centery):
             offset_pos = sprite.rect.topleft - self.offset + self.internal_offset
             if isinstance(sprite, Collectible):
+                self.internal_surf.blit(sprite.image, offset_pos)
                 sprite.draw(self.internal_surf, self.offset)
             else:
-                self.internal_surf.blit(sprite.image, sprite.rect.topleft - self.offset + self.internal_offset)
+                self.internal_surf.blit(sprite.image, offset_pos)
 
         scaled_surf = pygame.transform.scale(self.internal_surf, self.internal_surface_size_vector * self.zoom_scale)
         scaled_rect = scaled_surf.get_rect(center=(self.half_w, self.half_h))
@@ -437,7 +438,7 @@ class Ghost(pygame.sprite.Sprite):
         self.rect.center = (round(self.home_pos.x), round(self.home_pos.y))
         self.state = "wander"
         self.timer = random.randint(400,1200)
-
+        
 class Collectible(pygame.sprite.Sprite):
     def __init__(self, pos, image, group):
         super().__init__(group)
@@ -463,7 +464,7 @@ class Collectible(pygame.sprite.Sprite):
         surface.blit(self.glow, self.glow_rect)
         # Draw actual collectible image
         surface.blit(self.image, self.rect.topleft - offset)
-
+        
 class FloatingText:
     def __init__(self, text, pos, color=(255, 255, 0), lifespan=60, rise_speed=1.5, font_size=24):
         self.text = text
@@ -494,7 +495,7 @@ class GameState(Enum):
     QUIT = -1
 
 # Settings screen
-def settings(screen):
+def settings(screen, width, height, game_state):
     try:
         background_img = pygame.image.load("photos/background.png").convert()
         background_img = pygame.transform.scale(background_img, screen.get_size())
@@ -502,20 +503,18 @@ def settings(screen):
         print(f"Error loading background.png: {e}")
         background_img = pygame.Surface(screen.get_size())
         background_img.fill(ORANGE)
-
-
-
+    
     global MASTER_VOLUME, MUSIC_VOLUME
     clock = pygame.time.Clock()
 
-    header_font = pygame.font.Font(None, 50)
+    header_font = pygame.font.Font(None, 36)
     header_surface = header_font.render("AUDIO SETTINGS", True, WHITE)
-    header_rect = pygame.Rect(200, 50, 400, 60)
+    header_rect = pygame.Rect(width/2 - 200, height/2 - 230, 400, 60)
 
-    master_slider = Slider((250, 180), (300, 8), "Master Volume", MASTER_VOLUME)
-    music_slider = Slider((250, 260), (300, 8), "Music Volume", MUSIC_VOLUME / MASTER_VOLUME if MASTER_VOLUME>0 else 0)
+    master_slider = Slider((width/2 - 150, height/2 - 95), (300, 8), "Master Volume", MASTER_VOLUME)
+    music_slider = Slider((width/2 - 150, height/2 - 35), (300, 8), "Music Volume", MUSIC_VOLUME / MASTER_VOLUME if MASTER_VOLUME>0 else 0)
 
-    back_btn = UIElement((400, 500), "Back", 28, BLACK, WHITE, GameState.MENU)
+    back_btn = UIElement((width/2, height/2 + 70), "Back", 28, BLACK, WHITE, game_state)
 
     while True:
         mouse_up = False
@@ -537,8 +536,13 @@ def settings(screen):
         
         action = back_btn.update(pygame.mouse.get_pos(), mouse_up)
         back_btn.draw(screen)
-        if action == GameState.MENU:
-            return GameState.MENU
+            
+        if action == game_state:
+            if game_state == GameState.START:
+                screen.fill(ORANGE) # background color when return to pause screen
+                return game_state
+            else:
+                return game_state
         
         # Update volume in real time
         MASTER_VOLUME = master_slider.value
@@ -546,13 +550,30 @@ def settings(screen):
         pygame.mixer.music.set_volume(MUSIC_VOLUME)
 
         pygame.display.flip()
+        clock.tick(60)
+        
+# Load Achievement Images function
+def load_achievement_images():
+    global achievements_data
+    ach_width, ach_height = 120, 120  # match your grid size
 
-       
-
+    for ach in achievements_data:
+        if "image_path" in ach:
+            try:
+                surf = pygame.image.load(ach["image_path"]).convert_alpha()
+                surf = pygame.transform.scale(surf, (ach_width, ach_height))
+                ach["surf"] = surf
+            except Exception as e:
+                print(f"Failed to load {ach['title']} image: {e}")
+                # fallback gray placeholder
+                surf = pygame.Surface((ach_width, ach_height))
+                surf.fill((100, 100, 100))
+                ach["surf"] = surf
 
 # Achievements screen
 def achievements(screen):
     global achievements_data
+    clock = pygame.time.Clock()
 
     # Load background
     try:
@@ -565,7 +586,7 @@ def achievements(screen):
 
     header_font = pygame.font.Font(None, 36)
     header_surface = header_font.render("ACHIEVEMENTS", True, WHITE)
-    header_rect = pygame.Rect(0, 50, screen.get_width(), 60)
+    header_rect = pygame.Rect(0, 45, screen.get_width(), 60)
 
     back_btn = UIElement((screen.get_width() // 2, screen.get_height() - 80), "Back", 28, BLACK, WHITE, GameState.MENU)
 
@@ -680,27 +701,8 @@ def achievements(screen):
             return GameState.MENU
 
         pygame.display.flip()
-
-       
-
-def load_achievement_images():
-    global achievements_data
-    ach_width, ach_height = 120, 120  # match your grid size
-
-    for ach in achievements_data:
-        if "image_path" in ach:
-            try:
-                surf = pygame.image.load(ach["image_path"]).convert_alpha()
-                surf = pygame.transform.scale(surf, (ach_width, ach_height))
-                ach["surf"] = surf
-            except Exception as e:
-                print(f"Failed to load {ach['title']} image: {e}")
-                # fallback gray placeholder
-                surf = pygame.Surface((ach_width, ach_height))
-                surf.fill((100, 100, 100))
-                ach["surf"] = surf
-
-
+        clock.tick(60)
+        
 # About screen
 def about(screen):
     try:
@@ -721,7 +723,7 @@ def about(screen):
 
     # About text content
     about_text = (
-        "Haunted Meadow Brook is a thrilling adventure game set in a mysterious mansion.\n\n"
+        "Haunted Meadow Brook is a thrilling adventure game set in a mysterious mansion. "
         "Explore every room, avoid ghosts, uncover secrets, and collect achievements. "
         "Each area of the mansion holds challenges and surprises for brave players. "
         "Immerse yourself in the eerie atmosphere and enjoy the unique soundtrack."
@@ -730,7 +732,7 @@ def about(screen):
     # Text box settings
     text_box_rect = pygame.Rect(150, 150, screen.get_width() - 300, screen.get_height() - 250)
     text_color = WHITE
-    font = pygame.font.Font(None, 36)
+    font = pygame.font.Font(None, 50)
     padding = 10
 
     # Pre-render wrapped text to a surface
@@ -749,7 +751,7 @@ def about(screen):
 
         text_height = len(lines) * (font.get_height() + 9)
         surf = pygame.Surface((max_width, text_height), pygame.SRCALPHA)
-        surf.fill((0, 0, 0, 0))  # transparent
+        surf.fill(CLEAR)  # transparent
 
         y_offset = 0
         for line in lines:
@@ -794,8 +796,6 @@ def about(screen):
         if action == GameState.MENU:
             return GameState.MENU
 
-
-
         pygame.display.flip()
         clock.tick(60)
                 
@@ -809,28 +809,24 @@ def about(screen):
         if action == GameState.MENU:
             return GameState.MENU
 
-        pygame.display.flip()
-
+# Load Scaled function
 def load_scaled(path, size):
     img = pygame.image.load(path).convert_alpha()
     return pygame.transform.scale(img, size)
 
 # Main function
 def main():
-    global animations, player_image, player_rect
     global MASTER_VOLUME, MUSIC_VOLUME
-    global door_sound
+    global animations, door_sound
 
     pygame.init()
     pygame.mixer.init()
-
+    
     door_sound = pygame.mixer.Sound("Sounds/door1.mp3")
     door_sound.set_volume(random.uniform(0.3, 0.6))
-
+    
     screen = pygame.display.set_mode((MENU_SIZE))
     pygame.display.set_caption("Haunted Meadow Brook")
-
-    
 
     # Load background music safely
     music_file = ("music&text/spooky_theme.mp3")
@@ -885,9 +881,10 @@ def main():
         elif state == GameState.START:
             state = play_level(screen)
         elif state == GameState.SETTINGS:
-            state = settings(screen)
+            # settings screen adjusts to current screen size
+            state = settings(screen, MENU_WIDTH, MENU_HEIGHT, game_state = GameState.MENU)
         elif state == GameState.ACHIEVEMENTS:
-            load_achievement_images()  # <-- load images first
+            load_achievement_images() # <-- load images first
             state = achievements(screen)
         elif state == GameState.ABOUT:
             state = about(screen)
@@ -909,11 +906,11 @@ def menu(screen):
     
     # Menu buttons
     buttons = [
-        UIElement((MENU_WIDTH / 2, 280), "Start", 30, BLACK, WHITE, GameState.START),
-        UIElement((MENU_WIDTH / 2, 340), "Settings", 26, BLACK, WHITE, GameState.SETTINGS),
-        UIElement((MENU_WIDTH / 2, 400), "Achievements", 26, BLACK, WHITE, GameState.ACHIEVEMENTS),
-        UIElement((MENU_WIDTH / 2, 460), "About", 26, BLACK, WHITE, GameState.ABOUT),
-        UIElement((MENU_WIDTH / 2, 520), "Quit", 26, BLACK, WHITE, GameState.QUIT)
+        UIElement((MENU_WIDTH/2, 300), "Start", 30, BLACK, WHITE, GameState.START),
+        UIElement((MENU_WIDTH/2, 360), "Settings", 26, BLACK, WHITE, GameState.SETTINGS),
+        UIElement((MENU_WIDTH/2, 420), "Achievements", 26, BLACK, WHITE, GameState.ACHIEVEMENTS),
+        UIElement((MENU_WIDTH/2, 480), "About", 26, BLACK, WHITE, GameState.ABOUT),
+        UIElement((MENU_WIDTH/2, 540), "Quit", 26, BLACK, WHITE, GameState.QUIT),
     ]
     
     clock = pygame.time.Clock()
@@ -950,7 +947,6 @@ def play_level(screen):
     clock = pygame.time.Clock()
     collected_items = 0
     floating_texts = []
-    
     rooms = {}
     
     # Set initial room temporarily to get viewport
@@ -986,64 +982,64 @@ def play_level(screen):
     ps5_img = load_scaled("photos/party_supplies/Ps5.png", (80,80))
 
     hallway_collectibles = [
-    Collectible(random_position((3600,700)), ps1_img, camera_group),
-    Collectible(random_position((3600,700)), ps2_img, camera_group)
-]
+        Collectible(random_position((3600,700)), ps1_img, camera_group),
+        Collectible(random_position((3600,700)), ps2_img, camera_group)
+    ]
     dining_collectibles = [
-    Collectible(random_position((1000,900)), ps3_img, camera_group)
-]
+        Collectible(random_position((1000,900)), ps3_img, camera_group)
+    ]
     alfred_collectibles = [
-    Collectible(random_position((900,900)), ps4_img, camera_group)
-]
+        Collectible(random_position((900,900)), ps4_img, camera_group)
+    ]
     matilda_collectibles = [
-    Collectible(random_position((900,900)), ps5_img, camera_group)
-]
+        Collectible(random_position((900,900)), ps5_img, camera_group)
+    ]
     
-
+    
     # Create separate ghosts for each room
     hallwayA_ghost_room = pygame.Rect(0, 0, 3600, 700)
     hallwayA_ghosts = [
         Ghost(
-            start_pos=hallwayA_ghost_room.center,
+            start_pos=(1100, 550),
             room_rect=hallwayA_ghost_room,
             image=ghost_img,
             group=camera_group  
         ),
         Ghost(
-            start_pos=hallwayA_ghost_room.center,
+            start_pos=(1900, 550),
             room_rect=hallwayA_ghost_room,
             image=ghost_img,
             group=camera_group  
         ),
         Ghost(
-            start_pos=hallwayA_ghost_room.center,
+            start_pos=(3300, 150),
             room_rect=hallwayA_ghost_room,
             image=ghost_img,
             group=camera_group  
-        )
+        ),
     ]
-    dining_ghost_room = pygame.Rect(0, 0, 500, 400)  
+    dining_ghost_room = pygame.Rect(0, 0, 1000, 900)  
     dining_ghosts = [
         Ghost(
-            start_pos=dining_ghost_room.center,
+            start_pos=(150, 300),
             room_rect=dining_ghost_room,
             image=ghost_img,
             group=camera_group  
         ),
     ]
-    alfredstudy_ghost_room = pygame.Rect(0, 0, 400, 400)  
+    alfredstudy_ghost_room = pygame.Rect(0, 0, 900, 900)  
     alfred_study_ghosts = [
         Ghost(
-            start_pos=alfredstudy_ghost_room.center,
+            start_pos=(250, 200),
             room_rect=alfredstudy_ghost_room,
             image=ghost_img,
             group=camera_group  
         )
     ]
-    matildastudy_ghost_room = pygame.Rect(0, 0, 400, 400)  
+    matildastudy_ghost_room = pygame.Rect(0, 0, 900, 900)  
     matilda_study_ghosts = [
         Ghost(
-            start_pos=matildastudy_ghost_room.center,
+            start_pos=(250, 200),
             room_rect=matildastudy_ghost_room,
             image=ghost_img,
             group=camera_group  
@@ -1073,7 +1069,7 @@ def play_level(screen):
         },
         ghosts=hallwayA_ghosts,
         collectibles=hallway_collectibles,
-        viewport=(1500, 700)
+        viewport=(1500, 700),
     )
 
     dining_room = Room(
@@ -1088,7 +1084,8 @@ def play_level(screen):
         },
         ghosts=dining_ghosts,
         collectibles=dining_collectibles,
-        viewport=(1000, 700)
+        viewport=(1000, 700),
+        respawn_pos=(850, 750)
     )
     
     alfred_study = Room(
@@ -1103,7 +1100,8 @@ def play_level(screen):
         },
         ghosts=alfred_study_ghosts,
         collectibles=alfred_collectibles,
-        viewport=(900, 700)
+        viewport=(900, 700),
+        respawn_pos=(200, 750)
     )
     
     matilda_study = Room(
@@ -1118,7 +1116,8 @@ def play_level(screen):
         },
         ghosts=matilda_study_ghosts,
         collectibles=matilda_collectibles,
-        viewport=(900, 700)
+        viewport=(900, 700),
+        respawn_pos=(200, 750)
     )
     
     # Room dictionary
@@ -1153,23 +1152,11 @@ def play_level(screen):
         action="PAUSE"
     )
     
-    retry_btn = UIElement(
-    (current_room.viewport[0]//2, current_room.viewport[1]//2 + 120),
-    "Retry",
-    30,
-    BLACK,
-    WHITE,
-    GameState.START
-    )
-    
-    menu_btn = UIElement(
-    (current_room.viewport[0]//2, current_room.viewport[1]//2 + 190),
-    "Main Menu",
-    30,
-    BLACK,
-    WHITE,
-    GameState.MENU
-)
+    # Buttons after Player Death
+    retry_btn = UIElement((current_room.viewport[0]//2, current_room.viewport[1]//2 + 120), 
+                          "Retry", 30, BLACK, WHITE, GameState.START)
+    menu_btn = UIElement((current_room.viewport[0]//2, current_room.viewport[1]//2 + 190), 
+                         "Main Menu", 30, BLACK, WHITE, GameState.MENU)
     
     # Define enter_room function
     def enter_room(room, spawn_pos):
@@ -1198,7 +1185,6 @@ def play_level(screen):
     
     while True:
         dt = clock.tick(60)
-        
         mouse_up = False
 
         for event in pygame.event.get():
@@ -1241,14 +1227,21 @@ def play_level(screen):
                 menu_btn.draw(screen)
 
                 if action == GameState.START:
-                    player.reset((current_room.viewport[0] // 2, current_room.viewport[1] // 2))
+                    # Reset player at the respawn position of current room
+                    if current_room.respawn_pos == None:
+                        player.reset((current_room.viewport[0] // 2, current_room.viewport[1] // 2))
+                    else:
+                        player.reset(current_room.respawn_pos)
+                        
+                    # Reset ghosts of current room
                     for ghost in current_room.ghosts:
                         ghost.reset()
+                        
                     continue
                 
-
-                if action2 == GameState.MENU:
+                elif action2 == GameState.MENU:
                     return GameState.MENU
+                
             pygame.display.update()
             continue
             
@@ -1256,14 +1249,41 @@ def play_level(screen):
         action = pause_button.update(pygame.mouse.get_pos(), mouse_up)
         if action == "PAUSE":
             paused = not paused
+            mouse_up = False
             
         # Draw pause overlay if paused
         if paused:
             overlay = pygame.Surface(current_room.viewport, pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 160))
+            overlay.fill(CLEAR)
             screen.blit(overlay, (0, 0))
-            pause_text = create_surface_with_text("PAUSED", 48, WHITE, (0, 0, 0, 0))
-            screen.blit(pause_text, pause_text.get_rect(center=(current_room.viewport[0] // 2, current_room.viewport[1] // 2)))
+            pause_text = create_surface_with_text("PAUSED", 48, WHITE, BLACK)
+            screen.blit(
+                pause_text, 
+                pause_text.get_rect(center=(current_room.viewport[0]//2, current_room.viewport[1]//2))
+            )
+            
+            # Buttons on pause screen
+            pause_buttons = [
+                UIElement((current_room.viewport[0]//2, current_room.viewport[1]//2 - 65), 
+                          "Resume", 30, BLACK, WHITE, "RESUME"),
+                UIElement((current_room.viewport[0]//2, current_room.viewport[1]//2 + 70), 
+                          "Settings", 26, BLACK, WHITE, "SETTINGS"),
+                UIElement((current_room.viewport[0]//2, current_room.viewport[1]//2 + 130), 
+                          "Quit", 26, BLACK, WHITE, "QUIT"),
+            ]
+            
+            for btn in pause_buttons:
+                menu_action = btn.update(pygame.mouse.get_pos(), mouse_up)
+                btn.draw(screen)
+                
+                if menu_action == "RESUME":
+                    paused = False
+                    mouse_up = False
+                elif menu_action == "SETTINGS":
+                    mouse_up = False
+                    settings(screen, current_room.viewport[0], current_room.viewport[1], GameState.START)
+                elif menu_action == "QUIT":
+                    return GameState.MENU
             
         else:
             keys = pygame.key.get_pressed()
@@ -1310,42 +1330,42 @@ def play_level(screen):
             player.image = animations[current_direction][current_frame]
             for ghost in current_room.ghosts:
                 ghost.update(dt, player)
-            
+                
             # Clamp player to room bounds
             player.rect.clamp_ip(current_room.bg_rect)
             player.update()
             
-           # COLLECTIBLE COLLISION
-        for item in current_room.collectibles[:]:
-            if player.rect.colliderect(item.rect):
-                item.collect()
-                current_room.collectibles.remove(item)
-                collected_items += 1
-                floating_texts.append(FloatingText("+1", item.rect.center))
-                print("Collected:", collected_items)
-
-            # ACHIEVEMENT CHECK
-        if collected_items >= 10:
-            achievements_data[1]["unlocked"] = True
-
             # Check if player hits a door
-        door_hit = current_room.get_door_at(player.rect)
-        if door_hit:
-            door_sound.play()  # play door sound
-            enter_room(rooms[door_hit['target_room']], door_hit['spawn_pos'])
+            door_hit = current_room.get_door_at(player.rect)
+            if door_hit:
+                door_sound.play()  # play door sound
+                enter_room(rooms[door_hit['target_room']], door_hit['spawn_pos'])
+                
+            camera_group.box_target_camera(player, current_room.size)
+            camera_group.custom_draw(player, current_room)
+          
+            # COLLECTIBLE COLLISION
+            for item in current_room.collectibles[:]:
+                if player.rect.colliderect(item.rect):
+                    item.collect()
+                    current_room.collectibles.remove(item)
+                    collected_items += 1
+                    floating_texts.append(FloatingText("+1", item.rect.center))
+                    print("Collected:", collected_items)
+                    
+            # ACHIEVEMENT CHECK
+            if collected_items >= 10:
+                achievements_data[1]["unlocked"] = True
             
-        camera_group.box_target_camera(player, current_room.size)
-        camera_group.custom_draw(player, current_room)
-        
-        # Update floating text
-        for ft in floating_texts[:]:
-            if not ft.update():  
-                floating_texts.remove(ft)
-            
-            # Draw floating text
+            # Update floating text
+            for ft in floating_texts[:]:
+                if not ft.update():  
+                    floating_texts.remove(ft)
+                
+                # Draw floating text
 
-        for ft in floating_texts:
-            ft.draw(screen)
+            for ft in floating_texts:
+                ft.draw(screen)
 
         pause_button.draw(screen)
         pygame.display.update()

@@ -9,7 +9,7 @@ from random import randint
 
 from game_state import *
 from global_variables import *
-from load_scaled import *
+from other_functions import *
 from play_level import *
 
 # Main function (run this file to open game)

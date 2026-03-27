@@ -27,3 +27,4 @@ class Collectible(pygame.sprite.Sprite):
         surface.blit(self.glow, self.glow_rect)
         # Draw actual collectible image
         surface.blit(self.image, self.rect.topleft - offset)
+        

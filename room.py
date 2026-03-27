@@ -7,7 +7,7 @@ from pygame.rect import Rect
 from enum import Enum
 from random import randint
 
-from load_scaled import *
+from other_functions import *
 from global_variables import *
 
 # Room class
@@ -33,3 +33,31 @@ class Room:
             if player_rect.colliderect(info['rect']):
                 return info  
         return None
+    
+# Enter Room function
+def enter_room(player, pause_button, camera_group, target_room, spawn_pos):
+    
+    current_room = target_room
+    player.rect.center = spawn_pos
+    
+    # push the player out of any door they happen to land in
+    for info in target_room.doors.values():
+        if player.rect.colliderect(info['rect']):
+            player.rect.bottom = info['rect'].top - 1   # for example
+    
+    viewport_width, viewport_height = current_room.viewport
+    screen = pygame.display.set_mode((viewport_width, viewport_height))
+    pause_button.rects[0].center = (viewport_width - 60, 40)
+    pause_button.rects[1].center = (viewport_width - 60, 40)
+    
+    camera_group.set_viewport(viewport_width, viewport_height)
+    
+    # Clamp camera to the new room, centred on the player
+    camera_group.camera_rect.x = max(0, min(player.rect.centerx - viewport_width // 2, current_room.size[0] - viewport_width))
+    camera_group.camera_rect.y = max(0, min(player.rect.centery - viewport_height // 2, current_room.size[1] - viewport_height))
+    camera_group.offset.x = camera_group.camera_rect.x - camera_group.camera_borders["left"]
+    camera_group.offset.y = camera_group.camera_rect.y - camera_group.camera_borders["top"]
+    
+    return current_room
+    
+    

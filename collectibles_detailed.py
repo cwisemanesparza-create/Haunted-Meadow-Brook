@@ -37,11 +37,11 @@ def collectibles_detailed(images, camera):
     
     # Create separate collectibles for each room
     hallwayA_collectibles = [
-        Collectible(random_position((3600,700)), images["ps1_img"], camera),
-        Collectible(random_position((3600,700)), images["ps2_img"], camera)
+        Collectible(random_position((3600,700)), images["ps2_img"], camera),
+        Collectible(random_position((3600,700)), images["ps3_img"], camera)
     ]
     dining_collectibles = [
-        Collectible(random_position((1000,900)), images["ps3_img"], camera)
+        Collectible(random_position((1000,900)), images["ps1_img"], camera)
     ]
     alfred_study_collectibles = [
         Collectible(random_position((900,900)), images["ps4_img"], camera)
@@ -50,13 +50,30 @@ def collectibles_detailed(images, camera):
         Collectible(random_position((900,900)), images["ps5_img"], camera)
     ]
     main_great_collectibles = [
-        Collectible(random_position((1000,1250)), images["ps5_img"], camera)
+        Collectible(random_position((1000,900)), images["ps1_img"], camera)
     ]
     living_collectibles = [
-        Collectible(random_position((900,900)), images["ps5_img"], camera)
+        Collectible(random_position((900,900)), images["ps4_img"], camera)
+    ]
+    hallwayC_collectibles = [
+        Collectible(random_position((700,1850)), images["ps2_img"], camera),
+        Collectible(random_position((700,1850)), images["ps3_img"], camera)
     ]
     library_collectibles = [
         Collectible(random_position((900,900)), images["ps5_img"], camera)
+    ]
+    lower_hallway_collectibles = [
+        Collectible(random_position((3600,700)), images["ps3_img"], camera),
+        Collectible(random_position((3600,700)), images["ps4_img"], camera)
+    ]
+    game_collectibles = [
+        Collectible(random_position((900,900)), images["ps1_img"], camera)
+    ]
+    lower_great_collectibles = [
+        Collectible(random_position((1000,900)), images["ps2_img"], camera)
+    ]
+    ballroom_collectibles = [
+        Collectible(random_position((1280,1000)), images["ps5_img"], camera)
     ]
     
     # Collectibles dictionary
@@ -67,7 +84,12 @@ def collectibles_detailed(images, camera):
         "matilda_study_collectibles": matilda_study_collectibles,
         "main_great_collectibles": main_great_collectibles,
         "living_collectibles": living_collectibles,
-        "library_collectibles": library_collectibles 
+        "hallwayC_collectibles": hallwayC_collectibles,
+        "library_collectibles": library_collectibles,
+        "lower_hallway_collectibles": lower_hallway_collectibles,
+        "game_collectibles": game_collectibles,
+        "lower_great_collectibles": lower_great_collectibles,
+        "ballroom_collectibles": ballroom_collectibles
     }
 
     return collectibles

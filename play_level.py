@@ -60,10 +60,10 @@ def play_level(screen):
     
     # Set initial room temporarily to get viewport
     temp_room = Room(
-        "photos/background_photos/Hallway_Main_Floor_A_Update.png",
-        (3600, 700),
+        "photos/background_photos/Great_Hall.png",
+        (1000, 1250),
         doors={},
-        viewport=(1500, 700)
+        viewport=(1000, 700)
     )
     current_room = temp_room
     
@@ -90,7 +90,7 @@ def play_level(screen):
     rooms = rooms_detailed(ghosts, collectibles)
     
     # Set initial current room
-    current_room = rooms["hallway_A"]
+    current_room = rooms["main_great_hall"]
     
     # Create player
     player = Player(

@@ -61,9 +61,9 @@ def play_level(screen):
     # Set initial room temporarily to get viewport
     temp_room = Room(
         "photos/background_photos/Great_Hall.png",
-        (1000, 1250),
+        (1500, 1241),
         doors={},
-        viewport=(1000, 700)
+        viewport=(1500, 700)
     )
     current_room = temp_room
     

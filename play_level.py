@@ -30,6 +30,20 @@ from cabinet_vacuum import*
 
 # Note: run main.py file to open game, play_level is the game after menu
 
+Score = 0
+
+def increase_score50():
+    global Score
+    Score += 50
+    
+def increase_score100():
+    global Score
+    Score += 100
+    
+def increase_score500():
+    global Score
+    Score += 500
+
 def spawn_key_in_random_room(rooms, camera_group, key_surface):
     possible_rooms = ["library", "game_room", "living_room", "dining_room", "main_great_hall"]
     room_name = random.choice(possible_rooms)
@@ -296,6 +310,8 @@ def play_level(screen):
                 if ghost.captured:
                     current_room.ghosts.remove(ghost)
                     ghost.kill()
+                    increase_score100()
+                    print("Score: ", Score)
                     floating_texts.append(
                         FloatingText(
                             "Ghost captured!",
@@ -391,7 +407,6 @@ def play_level(screen):
                         floating_texts.append(FloatingText("+1", item.rect.center))
                         print("Collected:", collected_items)
                     
-                    
             # ACHIEVEMENT CHECK
             if collected_items >= 10:
                 achievements_data[1]["unlocked"] = True
@@ -405,6 +420,26 @@ def play_level(screen):
 
             for ft in floating_texts:
                 ft.draw(screen)
+                
+            # Score tracker
+            score_tracker = UIElement(
+                center_position=(100, 50),
+                text=("Score: " + str(Score)),
+                font_size=26,
+                bg_rgb=BLACK,
+                text_rgb=WHITE
+            )
+            
+            # Collected tracker
+            collected_tracker = UIElement(
+                center_position=(125, 100),
+                text=("Collected: " + str(collected_items)),
+                font_size=26,
+                bg_rgb=BLACK,
+                text_rgb=WHITE
+            )
 
+        score_tracker.draw(screen)
+        collected_tracker.draw(screen)
         pause_button.draw(screen)
         pygame.display.update()

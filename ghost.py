@@ -66,7 +66,7 @@ class Ghost(pygame.sprite.Sprite):
 
         if self.capture_timer >= self.capture_duration:
             self.captured = True
-
+        
     def update(self, *args):
         if len(args) >= 2:
             dt, player = args[:2]

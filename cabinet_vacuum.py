@@ -130,7 +130,7 @@ def draw_prompt(screen, text):
     rect = prompt_surface.get_rect(center=(screen.get_width() // 2, screen.get_height() - 64))
     screen.blit(prompt_surface, rect)
     
-def get_nearby_capturable_ghost(player, ghosts, capture_radius=200):
+def get_nearby_capturable_ghost(player, ghosts, capture_radius=250):
     player_pos = pygame.math.Vector2(player.rect.center)
     nearby_ghosts = [
         ghost for ghost in ghosts

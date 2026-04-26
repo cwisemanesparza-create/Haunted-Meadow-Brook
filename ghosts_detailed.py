@@ -23,7 +23,7 @@ def ghosts_detailed(ghost_img, camera):
     dining_ghost_room = pygame.Rect(0, 0, 1500, 900)  
     dining_ghosts = [
         Ghost(
-            start_pos=(750, 200),
+            start_pos=(750, 300),
             room_rect=dining_ghost_room,
             image=ghost_img,
             group=camera 
@@ -78,7 +78,7 @@ def ghosts_detailed(ghost_img, camera):
     library_ghost_room = pygame.Rect(0, 0, 1500, 900)  
     library_ghosts = [
         Ghost(
-            start_pos=(800, 800),
+            start_pos=(1350, 850),
             room_rect=library_ghost_room,
             image=ghost_img,
             group=camera  
@@ -93,7 +93,7 @@ def ghosts_detailed(ghost_img, camera):
     game_ghost_room = pygame.Rect(0, 0, 1500, 900)  
     game_ghosts = [
         Ghost(
-            start_pos=(250, 200),
+            start_pos=(350, 300),
             room_rect=game_ghost_room,
             image=ghost_img,
             group=camera 
@@ -113,13 +113,13 @@ def ghosts_detailed(ghost_img, camera):
     ball_ghost_room = pygame.Rect(0, 0, 1500, 1000)  
     ballroom_ghosts = [
         Ghost(
-            start_pos=(1000, 800),
+            start_pos=(1300, 750),
             room_rect=ball_ghost_room,
             image=ghost_img,
             group=camera 
         ),
         Ghost(
-            start_pos=(200, 800),
+            start_pos=(200, 750),
             room_rect=ball_ghost_room,
             image=ghost_img,
             group=camera 

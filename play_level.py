@@ -26,8 +26,19 @@ from ghosts_detailed import *
 from room import *
 from rooms_detailed import *
 
+from cabinet_vacuum import*
 
 # Note: run main.py file to open game, play_level is the game after menu
+
+def spawn_key_in_random_room(rooms, camera_group, key_surface):
+    possible_rooms = ["library", "game_room", "living_room", "dining_room", "main_great_hall"]
+    room_name = random.choice(possible_rooms)
+    room = rooms[room_name]
+    key_item = Collectible(random_position(room.size, margin=120), key_surface, camera_group)
+    key_item.is_key = True
+    key_item.room_name = room_name
+    room.collectibles.append(key_item)
+    return key_item, room_name
 
 # Play Level screen (START Game State)
 def play_level(screen):
@@ -89,6 +100,14 @@ def play_level(screen):
     # Create rooms with ghosts and collectibles
     rooms = rooms_detailed(ghosts, collectibles)
     
+    key_surface = create_key_surface()
+    vacuum_img = load_vacuum_surface()
+    key_item, key_room_name = spawn_key_in_random_room(rooms, camera_group, key_surface)
+    cabinet_room_name = "library"
+    opened_cabinet_img = load_opened_cabinet_surface()
+    cabinet = Cabinet((720, 620), create_cabinet_surface(False, False), opened_cabinet_img)
+    all_room_ghosts = {room_name: room.ghosts[:] for room_name, room in rooms.items()}
+    
     # Set initial current room
     current_room = rooms["main_great_hall"]
     
@@ -122,6 +141,8 @@ def play_level(screen):
     while True:
         dt = clock.tick(60)
         mouse_up = False
+        interact_pressed = False
+        capture_pressed = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -131,6 +152,10 @@ def play_level(screen):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 paused = not paused
                 return GameState.MENU
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+                interact_pressed = True
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                capture_pressed = True
         
         if player.dead:
             player.death_frame_timer += dt
@@ -169,9 +194,11 @@ def play_level(screen):
                     else:
                         player.reset(current_room.respawn_pos)
                         
-                    # Reset ghosts of current room
-                    for ghost in current_room.ghosts:
-                        ghost.reset()
+                    for room_name, room_ghosts in all_room_ghosts.items():
+                        rooms[room_name].ghosts = room_ghosts[:]
+                        # Reset ghosts for the retry so captured or capturing ghosts are restored.
+                        for ghost in rooms[room_name].ghosts:
+                            ghost.reset()
                         
                     continue
                 
@@ -264,12 +291,57 @@ def play_level(screen):
                 walk_offset = 0
 
             player.image = animations[current_direction][current_frame]
-            for ghost in current_room.ghosts:
+            for ghost in current_room.ghosts[:]:
                 ghost.update(dt, player)
+                if ghost.captured:
+                    current_room.ghosts.remove(ghost)
+                    ghost.kill()
+                    floating_texts.append(
+                        FloatingText(
+                            "Ghost captured!",
+                            screen_pos_from_world(player.rect.midtop, camera_group),
+                            color=(160, 220, 255)
+                        )
+                    )
                 
             # Clamp player to room bounds
             player.rect.clamp_ip(current_room.bg_rect)
             player.update()
+            
+            if interact_pressed and current_room == rooms[cabinet_room_name]:
+                if cabinet.rect.inflate(40, 40).colliderect(player.rect):
+                    if player.has_vacuum:
+                        pass
+                    elif not player.has_key:
+                        floating_texts.append(
+                            FloatingText(
+                                "Need a key",
+                                screen_pos_from_world(cabinet.rect.midtop, camera_group),
+                                color=(255, 210, 90)
+                            )
+                        )
+                    else:
+                        cabinet.open()
+                        player.has_vacuum = True
+                        floating_texts.append(
+                            FloatingText(
+                                "Cabinet unlocked",
+                                screen_pos_from_world(cabinet.rect.midtop, camera_group),
+                                color=(120, 255, 140)
+                            )
+                        )
+                        floating_texts.append(
+                            FloatingText(
+                                "Vacuum acquired!",
+                                screen_pos_from_world(player.rect.midtop, camera_group),
+                                color=(160, 220, 255)
+                            )
+                        )
+
+            if capture_pressed and player.has_vacuum:
+                nearest_ghost = get_nearby_capturable_ghost(player, current_room.ghosts)
+                if nearest_ghost is not None:
+                    nearest_ghost.start_capture(player)
             
             # Check if player hits a door
             door_hit = current_room.get_door_at(player.rect)
@@ -280,15 +352,45 @@ def play_level(screen):
                 
             camera_group.box_target_camera(player, current_room.size)
             camera_group.custom_draw(player, current_room)
-          
+            
+            if current_room == rooms[cabinet_room_name]:
+                cabinet.draw(screen, camera_group.offset)
+                
+            if player.has_vacuum:
+                draw_vacuum(screen, player, camera_group.offset, current_direction, vacuum_img)
+
+            prompt_text = None
+            near_cabinet = current_room == rooms[cabinet_room_name] and cabinet.rect.inflate(40, 40).colliderect(player.rect)
+            if near_cabinet and not player.has_vacuum:
+                if player.has_key:
+                    prompt_text = "Press E to unlock cabinet"
+                else:
+                    prompt_text = "Need a key"
+            elif player.has_vacuum and get_nearby_capturable_ghost(player, current_room.ghosts) is not None:
+                prompt_text = "Press SPACE to capture ghost"
+
+            if prompt_text is not None:
+                draw_prompt(screen, prompt_text)
+
             # COLLECTIBLE COLLISION
             for item in current_room.collectibles[:]:
                 if player.rect.colliderect(item.rect):
                     item.collect()
                     current_room.collectibles.remove(item)
-                    collected_items += 1
-                    floating_texts.append(FloatingText("+1", item.rect.center))
-                    print("Collected:", collected_items)
+                    if getattr(item, "is_key", False):
+                        player.has_key = True
+                        floating_texts.append(
+                            FloatingText(
+                                "Key collected!",
+                                screen_pos_from_world(item.rect.center, camera_group),
+                                color=(255, 225, 80)
+                            )
+                        )
+                    else:
+                        collected_items += 1
+                        floating_texts.append(FloatingText("+1", item.rect.center))
+                        print("Collected:", collected_items)
+                    
                     
             # ACHIEVEMENT CHECK
             if collected_items >= 10:

@@ -33,3 +33,12 @@ FRAME_DELAY = 110
 # Death Animation timers
 FRAME_DELAY = 110
 DEATH_FRAME_DELAY = 300
+
+# Vacuum draw size and offsets
+VACUUM_DRAW_SIZE = (64, 29)
+VACUUM_OFFSETS = {
+    "right": (82, 88),
+    "left": (4, 88),
+    "forward": (43, 118),
+    "back": (45, 80),
+}

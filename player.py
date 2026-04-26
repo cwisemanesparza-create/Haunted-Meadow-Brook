@@ -33,6 +33,9 @@ class Player(pygame.sprite.Sprite):
         self.spawn_protection = 1000   # milliseconds (1 second)
         self.spawn_timer = 0
         
+        self.has_key = False
+        self.has_vacuum = False
+        
     def input(self):
         keys = pygame.key.get_pressed()
         
@@ -60,6 +63,7 @@ class Player(pygame.sprite.Sprite):
         self.death_frame = 0
         self.death_frame_timer = 0
         self.death_finished = False
+        # Run persistence: inventory stays with the player after death/retry.
         
 # Animation images function
 def animation_images(load_scaled):

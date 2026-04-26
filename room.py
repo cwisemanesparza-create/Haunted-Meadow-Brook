@@ -23,8 +23,8 @@ class Room:
         
         # if the caller supplied a viewport, otherwise clamp to the maximum allowed
         if viewport is None:
-            w = min(size[0], MAX_VIEWPORT_WIDTH)
-            h = min(size[1], MAX_VIEWPORT_HEIGHT)
+            w = 1500
+            h = 700
             viewport = (w, h)
         self.viewport = viewport         
 

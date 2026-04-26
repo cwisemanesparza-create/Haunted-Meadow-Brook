@@ -161,6 +161,48 @@ def ghosts_detailed(ghost_img, camera):
         
     ]
     
+    hallwayE_ghost_room = pygame.Rect(0, 0, 1896, 700) 
+    hallwayE_ghosts = [
+        
+    ]
+    
+    guest4_ghost_room = pygame.Rect(0, 0, 1500, 1000) 
+    guest4_ghosts = [
+        
+    ]
+    
+    frances_ghost_room = pygame.Rect(0, 0, 1500, 1000) 
+    frances_ghosts = [
+        
+    ]
+    
+    hallwayF1_ghost_room = pygame.Rect(0, 0, 1909, 700) 
+    hallwayF1_ghosts = [
+        
+    ]
+    
+    hallwayF2_ghost_room = pygame.Rect(0, 0, 1500, 1802) 
+    hallwayF2_ghosts = [
+        
+    ]
+    
+    guest5_ghost_room = pygame.Rect(0, 0, 1500, 1000) 
+    guest5_ghosts = [
+        
+    ]
+    
+    hallwayF3_ghost_room = pygame.Rect(0, 0, 1896, 700) 
+    hallwayF3_ghosts = [
+        
+    ]
+    
+    dan_ghost_room = pygame.Rect(0, 0, 1500, 1000) 
+    dan_ghosts = [
+        
+    ]
+    
+    
+    
     
     # Ghosts dictionary
     ghosts = {
@@ -183,7 +225,15 @@ def ghosts_detailed(ghost_img, camera):
         "alfred_bed_ghosts": alfred_bed_ghosts,
         "guest3_ghosts": guest3_ghosts,
         "guest1_ghosts": guest1_ghosts,
-        "guest2_ghosts": guest2_ghosts
+        "guest2_ghosts": guest2_ghosts,
+        "hallwayE_ghosts": hallwayE_ghosts,
+        "guest4_ghosts": guest4_ghosts,
+        "frances_ghosts": frances_ghosts,
+        "hallwayF1_ghosts": hallwayF1_ghosts,
+        "hallwayF2_ghosts": hallwayF2_ghosts,
+        "guest5_ghosts": guest5_ghosts,
+        "hallwayF3_ghosts": hallwayF3_ghosts,
+        "dan_ghosts": dan_ghosts
     }
     
     return ghosts

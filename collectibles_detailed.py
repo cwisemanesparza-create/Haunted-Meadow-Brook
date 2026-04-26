@@ -102,6 +102,38 @@ def collectibles_detailed(images, camera):
         Collectible(random_position((1500,1000)), images["ps2_img"], camera)
     ]
     
+    hallwayE_collectibles = [
+        Collectible(random_position((1896,700)), images["ps2_img"], camera),
+    ]
+    
+    guest4_collectibles = [
+        Collectible(random_position((1500,1000)), images["ps4_img"], camera)
+    ]
+    
+    frances_collectibles = [
+        Collectible(random_position((1500,1000)), images["ps5_img"], camera)
+    ]
+    
+    hallwayF1_collectibles = [
+        Collectible(random_position((1909,700)), images["ps1_img"], camera)
+    ]
+    
+    hallwayF2_collectibles = [
+        Collectible(random_position((1500,1802)), images["ps2_img"], camera)
+    ]
+    
+    guest5_collectibles = [
+        Collectible(random_position((1500,1000)), images["ps5_img"], camera)
+    ]
+    
+    hallwayF3_collectibles = [
+        Collectible(random_position((1896,700)), images["ps3_img"], camera)
+    ]
+    
+    dan_collectibles = [
+        Collectible(random_position((1500,1000)), images["ps4_img"], camera)
+    ]
+    
     # Collectibles dictionary
     collectibles = {
         "hallwayA_collectibles": hallwayA_collectibles,
@@ -123,7 +155,15 @@ def collectibles_detailed(images, camera):
         "alfred_bed_collectibles": alfred_bed_collectibles,
         "guest3_collectibles": guest3_collectibles,
         "guest1_collectibles": guest1_collectibles,
-        "guest2_collectibles": guest2_collectibles
+        "guest2_collectibles": guest2_collectibles,
+        "hallwayE_collectibles": hallwayE_collectibles,
+        "guest4_collectibles": guest4_collectibles,
+        "frances_collectibles": frances_collectibles,
+        "hallwayF1_collectibles": hallwayF1_collectibles,
+        "hallwayF2_collectibles": hallwayF2_collectibles,
+        "guest5_collectibles": guest5_collectibles,
+        "hallwayF3_collectibles": hallwayF3_collectibles,
+        "dan_collectibles": dan_collectibles
     }
 
     return collectibles

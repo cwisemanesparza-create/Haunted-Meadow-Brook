@@ -68,7 +68,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["dining_ghosts"],
         collectibles=collectibles["dining_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(1300, 750)
     )
     
@@ -84,7 +83,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["alfred_study_ghosts"],
         collectibles=collectibles["alfred_study_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(300, 750)
     )
     
@@ -100,7 +98,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["matilda_study_ghosts"],
         collectibles=collectibles["matilda_study_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(300, 750)
     )
     
@@ -109,7 +106,7 @@ def rooms_detailed(ghosts, collectibles):
         (1500, 1241),
         doors={
             "maingreat_to_hallwayA": {
-                'rect': pygame.Rect(50, 525, 10, 50),  
+                'rect': pygame.Rect(25, 525, 10, 50),  
                 'target_room': "hallway_A",
                 'spawn_pos': (3400, 400)  
             },
@@ -131,7 +128,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["main_great_ghosts"],
         collectibles=collectibles["main_great_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(750, 1150)
     )
     
@@ -140,7 +136,7 @@ def rooms_detailed(ghosts, collectibles):
         (1896, 700),
         doors={
             "hallwayB_to_maingreat": {
-                'rect': pygame.Rect(50, 425, 10, 50),  
+                'rect': pygame.Rect(25, 425, 10, 50),  
                 'target_room': "main_great_hall",
                 'spawn_pos': (1350, 200)  
             },
@@ -153,7 +149,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["hallwayB_ghosts"],
         collectibles=collectibles["hallwayB_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(150, 450)
     )
     
@@ -162,7 +157,7 @@ def rooms_detailed(ghosts, collectibles):
         (1500, 900),
         doors={
             "living_to_hallwayB": {
-                'rect': pygame.Rect(50, 300, 10, 50),  
+                'rect': pygame.Rect(25, 300, 10, 50),  
                 'target_room': "hallway_B",
                 'spawn_pos': (1746, 450)  
             },
@@ -174,7 +169,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["living_ghosts"],
         collectibles=collectibles["living_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(350, 300)
     )
     
@@ -196,7 +190,7 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["hallwayC_ghosts"],
         collectibles=collectibles["hallwayC_collectibles"],
-        viewport=(700, 700),
+        viewport=(1500, 700),
         respawn_pos=(350, 300)
     )
     
@@ -212,7 +206,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["library_ghosts"],
         collectibles=collectibles["library_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(275, 300)
     )
     
@@ -244,7 +237,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["lower_hallway_ghosts"],
         collectibles=collectibles["lower_hallway_collectibles"],
-        viewport=(1500, 700)
     )
     
     game_room = Room(
@@ -259,7 +251,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["game_ghosts"],
         collectibles=collectibles["game_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(1050, 750)
     )
     
@@ -280,7 +271,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["lower_great_ghosts"],
         collectibles=collectibles["lower_great_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(750, 1160)
     )
     
@@ -296,7 +286,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["ballroom_ghosts"],
         collectibles=collectibles["ballroom_collectibles"],
-        viewport=(1280, 700),
         respawn_pos=(735, 300)
     )
     
@@ -310,24 +299,23 @@ def rooms_detailed(ghosts, collectibles):
                 'spawn_pos': (750, 1150)   
             },
             "uppergreat_to_hallwayD": {
-                'rect': pygame.Rect(50, 525, 10, 50),  
+                'rect': pygame.Rect(25, 525, 10, 50),  
                 'target_room': "hallway_D",
                 'spawn_pos': (3400, 400)  
             },
             "uppergreat_to_hallwayE": {
-                'rect': pygame.Rect(1450, 100, 10, 50),  
+                'rect': pygame.Rect(1450, 200, 10, 50),  
                 'target_room': "hallway_E",
-                'spawn_pos': (150, 450)  
+                'spawn_pos': (150, 400)  
             },
-            "uppergreat_to_hallwayF": {
-                'rect': pygame.Rect(1450, 350, 10, 50),  
-                'target_room': "hallway_F",
-                'spawn_pos': (150, 450)  
+            "uppergreat_to_hallwayF1": {
+                'rect': pygame.Rect(1450, 550, 10, 50),  
+                'target_room': "hallway_F1",
+                'spawn_pos': (150, 400)  
             }
         },
         ghosts=ghosts["upper_great_ghosts"],
         collectibles=collectibles["upper_great_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(750, 1160)
     )
     
@@ -373,8 +361,7 @@ def rooms_detailed(ghosts, collectibles):
            
         },
         ghosts=ghosts["hallwayD_ghosts"],
-        collectibles=collectibles["hallwayD_collectibles"],
-        viewport=(1500, 700),
+        collectibles=collectibles["hallwayD_collectibles"]
     )
     
     matilda_bedroom = Room(
@@ -389,7 +376,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["matilda_bed_ghosts"],
         collectibles=collectibles["matilda_bed_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(1300, 850)
     )
     
@@ -405,7 +391,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["alfred_bed_ghosts"],
         collectibles=collectibles["alfred_bed_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(300, 850)
     )
     
@@ -414,14 +399,13 @@ def rooms_detailed(ghosts, collectibles):
         (1500, 1000),
         doors={
             "guest3_to_hallwayD": {
-                'rect': pygame.Rect(200, 100, 50, 60),  
+                'rect': pygame.Rect(300, 950, 50, 60),  
                 'target_room': "hallway_D",
                 'spawn_pos': (2350, 300)  
             }
         },
         ghosts=ghosts["guest3_ghosts"],
         collectibles=collectibles["guest3_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(300, 850)
     )
     
@@ -437,7 +421,6 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["guest1_ghosts"],
         collectibles=collectibles["guest1_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(200, 300)
     )
     
@@ -453,9 +436,160 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["guest2_ghosts"],
         collectibles=collectibles["guest2_collectibles"],
-        viewport=(1500, 700),
         respawn_pos=(200, 300)
     )
+    
+    hallway_E = Room(
+        "photos/background_photos/Hallway_Upper_Floors_E.png",
+        (1896, 700),
+        doors={
+            "hallwayE_to_uppergreat": {
+                'rect': pygame.Rect(25, 425, 10, 50), 
+                'target_room': "upper_great_hall",
+                'spawn_pos': (1350, 250) 
+            },
+            "hallwayE_to_frances": {
+                'rect': pygame.Rect(1846, 400, 10, 50), 
+                'target_room': "frances_bedroom",
+                'spawn_pos': (200, 525) 
+            },
+            "hallwayD_to_guest4": {
+                'rect': pygame.Rect(750, 650, 100, 10), 
+                'target_room': "guest_room_4",
+                'spawn_pos': (200, 300) 
+            },
+        
+        },
+        ghosts=ghosts["hallwayE_ghosts"],
+        collectibles=collectibles["hallwayE_collectibles"]
+    )
+    
+    guest_room_4 = Room(
+        "photos/background_photos/Guest_Room_4.png",
+        (1500, 1000),
+        doors={
+            "guest4_to_hallwayE": {
+                'rect': pygame.Rect(175, 100, 25, 50),  
+                'target_room': "hallway_E",
+                'spawn_pos': (800, 450)  
+            }
+        },
+        ghosts=ghosts["guest4_ghosts"],
+        collectibles=collectibles["guest4_collectibles"],
+        respawn_pos=(200, 300)
+    )
+    
+    frances_bedroom = Room(
+        "photos/background_photos/Guest_Room_5.png",
+        (1500, 1000),
+        doors={
+            "frances_to_hallwayE": {
+                'rect': pygame.Rect(25, 500, 10, 50),  
+                'target_room': "hallway_E",
+                'spawn_pos': (1746, 400)  
+            }
+        },
+        ghosts=ghosts["frances_ghosts"],
+        collectibles=collectibles["frances_collectibles"],
+        respawn_pos=(200, 525)
+    )
+    
+    hallway_F1 = Room(
+        "photos/background_photos/Upper_Floors_Hallway_F1.png",
+        (1909, 700),
+        doors={
+            "hallwayF1_to_uppergreat": {
+                'rect': pygame.Rect(10, 425, 25, 50), 
+                'target_room': "upper_great_hall",
+                'spawn_pos': (1350, 550) 
+            },
+            "hallwayF1_to_hallwayF2": {
+                'rect': pygame.Rect(1275, 625, 600, 35), 
+                'target_room': "hallway_F2",
+                'spawn_pos': (500, 300) 
+            }
+        
+        },
+        ghosts=ghosts["hallwayF1_ghosts"],
+        collectibles=collectibles["hallwayF1_collectibles"]
+    )
+    
+    hallway_F2 = Room(
+        "photos/background_photos/Upper_Floors_Hallway_F2.png",
+        (1000, 1201),
+        doors={
+            "hallwayF2_to_hallwayF1": {
+                'rect': pygame.Rect(250, 25, 500, 25), 
+                'target_room': "hallway_F1",
+                'spawn_pos': (1575, 425) 
+            },
+            "hallwayF2_to_guest5": {
+                'rect': pygame.Rect(950, 200, 10, 50), 
+                'target_room': "guest_room_5",
+                'spawn_pos': (200, 525) 
+            },
+            "hallwayF2_to_hallwayF3": {
+                'rect': pygame.Rect(935, 650, 35, 525), 
+                'target_room': "hallway_F3",
+                'spawn_pos': (150, 425) 
+            }
+        
+        },
+        ghosts=ghosts["hallwayF2_ghosts"],
+        collectibles=collectibles["hallwayF2_collectibles"],
+        viewport=(1500, 700),
+    )
+    
+    guest_room_5 = Room(
+        "photos/background_photos/Guest_Room_5.png",
+        (1500, 1000),
+        doors={
+            "guest5_to_hallwayF2": {
+                'rect': pygame.Rect(25, 500, 10, 50),  
+                'target_room': "hallway_F2",
+                'spawn_pos': (850, 250)  
+            }
+        },
+        ghosts=ghosts["guest5_ghosts"],
+        collectibles=collectibles["guest5_collectibles"],
+        respawn_pos=(200, 525)
+    )
+    
+    hallway_F3 = Room(
+        "photos/background_photos/Upper_Floors_Hallway_F3.png",
+        (1896, 700),
+        doors={
+            "hallwayF3_to_hallwayF2": {
+                'rect': pygame.Rect(10, 300, 25, 375), 
+                'target_room': "hallway_F2",
+                'spawn_pos': (800, 1000) 
+            },
+            "hallwayF3_to_dan": {
+                'rect': pygame.Rect(1846, 425, 10, 50), 
+                'target_room': "dans_bedroom",
+                'spawn_pos': (200, 525) 
+            }
+        
+        },
+        ghosts=ghosts["hallwayF3_ghosts"],
+        collectibles=collectibles["hallwayF3_collectibles"]
+    )
+    
+    dans_bedroom = Room(
+        "photos/background_photos/Guest_Room_5.png",
+        (1500, 1000),
+        doors={
+            "dan_to_hallwayF3": {
+                'rect': pygame.Rect(25, 500, 10, 50),  
+                'target_room': "hallway_F3",
+                'spawn_pos': (1746, 425)  
+            }
+        },
+        ghosts=ghosts["dan_ghosts"],
+        collectibles=collectibles["dan_collectibles"],
+        respawn_pos=(200, 525)
+    )
+    
     
     # Rooms dictionary
     rooms = {
@@ -478,8 +612,15 @@ def rooms_detailed(ghosts, collectibles):
         "alfred_bedroom": alfred_bedroom,
         "guest_room_3": guest_room_3,
         "guest_room_1": guest_room_1,
-        "guest_room_2": guest_room_2
-        
+        "guest_room_2": guest_room_2,
+        "hallway_E": hallway_E,
+        "guest_room_4": guest_room_4,
+        "frances_bedroom": frances_bedroom,
+        "hallway_F1": hallway_F1,
+        "hallway_F2": hallway_F2,
+        "guest_room_5": guest_room_5,
+        "hallway_F3": hallway_F3,
+        "dans_bedroom": dans_bedroom
     }
     
     return rooms

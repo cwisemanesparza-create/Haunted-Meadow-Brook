@@ -17,7 +17,12 @@ def ghosts_detailed(ghost_img, camera):
     # Create separate ghosts for each room
     hallwayA_ghost_room = pygame.Rect(0, 0, 3600, 700)
     hallwayA_ghosts = [
-        
+        Ghost(
+            start_pos=(1800, 600),
+            room_rect=hallwayA_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     dining_ghost_room = pygame.Rect(0, 0, 1500, 900)  
@@ -33,7 +38,7 @@ def ghosts_detailed(ghost_img, camera):
     alfredstudy_ghost_room = pygame.Rect(0, 0, 1500, 900)  
     alfred_study_ghosts = [
         Ghost(
-            start_pos=(1200, 450),
+            start_pos=(750, 300),
             room_rect=alfredstudy_ghost_room,
             image=ghost_img,
             group=camera 
@@ -63,7 +68,13 @@ def ghosts_detailed(ghost_img, camera):
     living_ghost_room = pygame.Rect(0, 0, 1500, 900)  
     living_ghosts = [
         Ghost(
-            start_pos=(800, 200),
+            start_pos=(1200, 300),
+            room_rect=living_ghost_room,
+            image=ghost_img,
+            group=camera  
+        ),
+        Ghost(
+            start_pos=(850, 200),
             room_rect=living_ghost_room,
             image=ghost_img,
             group=camera  
@@ -72,7 +83,12 @@ def ghosts_detailed(ghost_img, camera):
     
     hallwayC_ghost_room = pygame.Rect(0, 0, 700, 1850)  
     hallwayC_ghosts = [
-        
+        Ghost(
+            start_pos=(575, 925),
+            room_rect=hallwayC_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     library_ghost_room = pygame.Rect(0, 0, 1500, 900)  
@@ -87,13 +103,24 @@ def ghosts_detailed(ghost_img, camera):
     
     lowerhallway_ghost_room = pygame.Rect(0, 0, 3600, 700)
     lower_hallway_ghosts = [
-        
+        Ghost(
+            start_pos=(2600, 100),
+            room_rect=lowerhallway_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     game_ghost_room = pygame.Rect(0, 0, 1500, 900)  
     game_ghosts = [
         Ghost(
-            start_pos=(350, 300),
+            start_pos=(300, 300),
+            room_rect=game_ghost_room,
+            image=ghost_img,
+            group=camera 
+        ),
+        Ghost(
+            start_pos=(1200, 300),
             room_rect=game_ghost_room,
             image=ghost_img,
             group=camera 
@@ -103,7 +130,13 @@ def ghosts_detailed(ghost_img, camera):
     lowergreat_ghost_room = pygame.Rect(0, 0, 1500, 900)  
     lower_great_ghosts = [
         Ghost(
-            start_pos=(850, 100),
+            start_pos=(850, 300),
+            room_rect=lowergreat_ghost_room,
+            image=ghost_img,
+            group=camera 
+        ),
+        Ghost(
+            start_pos=(1200, 450),
             room_rect=lowergreat_ghost_room,
             image=ghost_img,
             group=camera 
@@ -113,13 +146,13 @@ def ghosts_detailed(ghost_img, camera):
     ball_ghost_room = pygame.Rect(0, 0, 1500, 1000)  
     ballroom_ghosts = [
         Ghost(
-            start_pos=(1300, 750),
+            start_pos=(1200, 750),
             room_rect=ball_ghost_room,
             image=ghost_img,
             group=camera 
         ),
         Ghost(
-            start_pos=(200, 750),
+            start_pos=(300, 750),
             room_rect=ball_ghost_room,
             image=ghost_img,
             group=camera 
@@ -138,27 +171,52 @@ def ghosts_detailed(ghost_img, camera):
     
     matilda_bed_ghost_room = pygame.Rect(0, 0, 1500, 1000)  
     matilda_bed_ghosts = [
-    
+        Ghost(
+            start_pos=(750, 300),
+            room_rect=matilda_bed_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     alfred_bed_ghost_room = pygame.Rect(0, 0, 1500, 1000)  
     alfred_bed_ghosts = [
-    
+        Ghost(
+            start_pos=(750, 300),
+            room_rect=alfred_bed_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     guest3_ghost_room = pygame.Rect(0, 0, 1500, 1000) 
     guest3_ghosts = [
-        
+        Ghost(
+            start_pos=(1100, 350),
+            room_rect=guest3_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     guest1_ghost_room = pygame.Rect(0, 0, 1500, 1000) 
     guest1_ghosts = [
-        
+        Ghost(
+            start_pos=(1100, 350),
+            room_rect=guest1_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     guest2_ghost_room = pygame.Rect(0, 0, 1500, 1000) 
     guest2_ghosts = [
-        
+        Ghost(
+            start_pos=(1100, 350),
+            room_rect=guest2_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     hallwayE_ghost_room = pygame.Rect(0, 0, 1896, 700) 
@@ -168,12 +226,22 @@ def ghosts_detailed(ghost_img, camera):
     
     guest4_ghost_room = pygame.Rect(0, 0, 1500, 1000) 
     guest4_ghosts = [
-        
+        Ghost(
+            start_pos=(1100, 350),
+            room_rect=guest4_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     frances_ghost_room = pygame.Rect(0, 0, 1500, 1000) 
     frances_ghosts = [
-        
+        Ghost(
+            start_pos=(1100, 350),
+            room_rect=frances_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     hallwayF1_ghost_room = pygame.Rect(0, 0, 1909, 700) 
@@ -188,20 +256,33 @@ def ghosts_detailed(ghost_img, camera):
     
     guest5_ghost_room = pygame.Rect(0, 0, 1500, 1000) 
     guest5_ghosts = [
-        
+        Ghost(
+            start_pos=(1100, 350),
+            room_rect=guest5_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     hallwayF3_ghost_room = pygame.Rect(0, 0, 1896, 700) 
     hallwayF3_ghosts = [
-        
+        Ghost(
+            start_pos=(948, 100),
+            room_rect=hallwayF3_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
     
     dan_ghost_room = pygame.Rect(0, 0, 1500, 1000) 
     dan_ghosts = [
-        
+        Ghost(
+            start_pos=(1100, 350),
+            room_rect=dan_ghost_room,
+            image=ghost_img,
+            group=camera 
+        )
     ]
-    
-    
     
     
     # Ghosts dictionary

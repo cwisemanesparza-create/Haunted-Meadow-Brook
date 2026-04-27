@@ -42,3 +42,12 @@ VACUUM_OFFSETS = {
     "forward": (43, 118),
     "back": (45, 80),
 }
+
+# Key and Cabinet image path
+KEY_IMAGE_PATH = "photos/background_photos/cabinet variations and key/Key.png"
+LOCKED_CABINET_IMAGE_PATH = "photos/background_photos/cabinet variations and key/LOCKED cabinet with vacuum.png"
+EMPTY_CABINET_IMAGE_PATH = "photos/background_photos/cabinet variations and key/cabinet (NO VACUUM).png"
+
+# Key and Cabinet draw size
+KEY_DRAW_SIZE = (54, 32)
+CABINET_DRAW_SIZE = (92, 122)

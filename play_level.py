@@ -59,14 +59,27 @@ def play_level(screen):
     global current_direction, current_frame, frame_timer
     global walk_timer, walk_offset
     global door_sound
-    
-    pygame.init()
-    pygame.mixer.init()
+    global collected_items, ghosts_caught
+
     paused = False
     clock = pygame.time.Clock()
+    
     collected_items = 0
+    ghosts_caught = 0
+    #ghosts_remaining = 25
+    #rooms_explored = 1
+    
     floating_texts = []
     rooms = {}
+    
+    # Load background music safely
+    music_file = ("music&text/music1.mp3")
+    if os.path.isfile(music_file):
+        pygame.mixer.music.load(music_file)
+        pygame.mixer.music.set_volume(MUSIC_VOLUME)
+        pygame.mixer.music.play(-1)
+    else:
+        print(f"Warning: {music_file} not found. Music disabled.")
     
     # Load door sound
     door_sound = pygame.mixer.Sound("Sounds/door1.mp3")
@@ -75,13 +88,13 @@ def play_level(screen):
     # Load animations from animation images
     animations = animation_images(load_scaled)
     
-    # Death Screen Animantion frames
+    # Death Screen Animation frames
     death_frames = []
     for i in range (1, 12):
         frame = load_scaled(f"photos/grizz_death/grizz death cutscene/bear jump scare animation{i}.png",
                             screen.get_size())
         death_frames.append(frame)
-        animations["death"] = death_frames
+    animations["death"] = death_frames
     
     # Set initial room temporarily to get viewport
     temp_room = Room(
@@ -114,16 +127,18 @@ def play_level(screen):
     # Create rooms with ghosts and collectibles
     rooms = rooms_detailed(ghosts, collectibles)
     
-    key_surface = create_key_surface()
+    key_surface = load_key_surface()
     vacuum_img = load_vacuum_surface()
     key_item, key_room_name = spawn_key_in_random_room(rooms, camera_group, key_surface)
     cabinet_room_name = "library"
-    opened_cabinet_img = load_opened_cabinet_surface()
-    cabinet = Cabinet((720, 620), create_cabinet_surface(False, False), opened_cabinet_img)
+    locked_cabinet_img = load_locked_cabinet_surface()
+    empty_cabinet_img = load_empty_cabinet_surface()
+    cabinet = Cabinet((720, 620), locked_cabinet_img, empty_cabinet_img)
     all_room_ghosts = {room_name: room.ghosts[:] for room_name, room in rooms.items()}
     
     # Set initial current room
     current_room = rooms["main_great_hall"]
+    list_names_rooms = ["main_great_hall"]
     
     # Create player
     player = Player(
@@ -144,6 +159,33 @@ def play_level(screen):
         bg_rgb=BLACK,
         text_rgb=WHITE,
         action="PAUSE"
+    )
+    
+    # Score tracker
+    score_tracker = UIElement(
+        center_position=(75, 30),
+        text=("Score: " + str(Score)),
+        font_size=20,
+        bg_rgb=BLACK,
+        text_rgb=WHITE
+    )
+    
+    # Collected Items tracker
+    collected_items_tracker = UIElement(
+        center_position=(250, 30),
+        text=("Collected Items: " + str(collected_items)),
+        font_size=20,
+        bg_rgb=BLACK,
+        text_rgb=WHITE
+    )
+    
+    # Ghosts Caught tracker
+    ghosts_caught_tracker = UIElement(
+        center_position=(475, 30),
+        text=("Ghosts Caught: " + str(ghosts_caught)),
+        font_size=20,
+        bg_rgb=BLACK,
+        text_rgb=WHITE
     )
     
     # Buttons after Player Death
@@ -211,7 +253,7 @@ def play_level(screen):
                     for room_name, room_ghosts in all_room_ghosts.items():
                         rooms[room_name].ghosts = room_ghosts[:]
                         # Reset ghosts for the retry so captured or capturing ghosts are restored.
-                        for ghost in rooms[room_name].ghosts:
+                        for ghost in current_room.ghosts[:]:
                             ghost.reset()
                         
                     continue
@@ -311,7 +353,9 @@ def play_level(screen):
                     current_room.ghosts.remove(ghost)
                     ghost.kill()
                     increase_score100()
-                    print("Score: ", Score)
+                    score_tracker.set_text("Score: " + str(Score))
+                    ghosts_caught += 1
+                    ghosts_caught_tracker.set_text("Ghosts Caught: " + str(ghosts_caught))
                     floating_texts.append(
                         FloatingText(
                             "Ghost captured!",
@@ -364,7 +408,7 @@ def play_level(screen):
             if door_hit:
                 door_sound.play()  # play door sound
                 current_room = enter_room(player, pause_button, camera_group, rooms[door_hit['target_room']], door_hit['spawn_pos'])
-                #enter_room(rooms[door_hit['target_room']], door_hit['spawn_pos'])
+                #rooms_explored += 1
                 
             camera_group.box_target_camera(player, current_room.size)
             camera_group.custom_draw(player, current_room)
@@ -404,12 +448,15 @@ def play_level(screen):
                         )
                     else:
                         collected_items += 1
+                        collected_items_tracker.set_text("Collected Items: " + str(collected_items))
                         floating_texts.append(FloatingText("+1", item.rect.center))
-                        print("Collected:", collected_items)
                     
             # ACHIEVEMENT CHECK
             if collected_items >= 10:
                 achievements_data[1]["unlocked"] = True
+                
+            if ghosts_caught >= 1:
+                achievements_data[4]["unlocked"] = True
             
             # Update floating text
             for ft in floating_texts[:]:
@@ -420,26 +467,13 @@ def play_level(screen):
 
             for ft in floating_texts:
                 ft.draw(screen)
-                
-            # Score tracker
-            score_tracker = UIElement(
-                center_position=(100, 50),
-                text=("Score: " + str(Score)),
-                font_size=26,
-                bg_rgb=BLACK,
-                text_rgb=WHITE
-            )
-            
-            # Collected tracker
-            collected_tracker = UIElement(
-                center_position=(125, 100),
-                text=("Collected: " + str(collected_items)),
-                font_size=26,
-                bg_rgb=BLACK,
-                text_rgb=WHITE
-            )
-
+        
+        #score_tracker.set_text("Score: " + str(Score))
+        #collected_items_tracker.set_text("Collected Items: " + str(collected_items))
+        #ghosts_caught_tracker.set_text("Ghosts Caught: " + str(ghosts_caught))
+        
         score_tracker.draw(screen)
-        collected_tracker.draw(screen)
+        collected_items_tracker.draw(screen)
+        ghosts_caught_tracker.draw(screen)
         pause_button.draw(screen)
-        pygame.display.update()
+        pygame.display.flip()

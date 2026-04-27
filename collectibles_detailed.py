@@ -35,103 +35,112 @@ def party_supplies(load_scaled):
 # Collectibles Detailed function
 def collectibles_detailed(images, camera):
     
-    # Create separate collectibles for each room
+    collect_images = ["ps1_img", "ps2_img", "ps3_img", "ps4_img", "ps5_img"]
+    
+    # Create separate collectibles for each room with randomly selected images
     hallwayA_collectibles = [
-        Collectible(random_position((3600,700)), images["ps2_img"], camera),
-        Collectible(random_position((3600,700)), images["ps3_img"], camera)
+        Collectible(random_position((3600,700)), images[random.choice(collect_images)], camera),
+        Collectible(random_position((3600,700)), images[random.choice(collect_images)], camera)
     ]
     dining_collectibles = [
-        Collectible(random_position((1500,900)), images["ps1_img"], camera)
+        Collectible(random_position((1500,900)), images[random.choice(collect_images)], camera)
     ]
     alfred_study_collectibles = [
-        Collectible(random_position((1500,900)), images["ps4_img"], camera)
+        Collectible(random_position((1500,900)), images[random.choice(collect_images)], camera)
     ]
     matilda_study_collectibles = [
-        Collectible(random_position((1500,900)), images["ps5_img"], camera)
+        Collectible(random_position((1500,900)), images[random.choice(collect_images)], camera)
     ]
     main_great_collectibles = [
-        Collectible(random_position((1500,900)), images["ps1_img"], camera)
+        Collectible(random_position((1500,1241)), images[random.choice(collect_images)], camera),
+        Collectible(random_position((1500,1241)), images[random.choice(collect_images)], camera)
     ]
     hallwayB_collectibles = [
-        Collectible(random_position((1896,700)), images["ps2_img"], camera),
+        Collectible(random_position((1896,700)), images[random.choice(collect_images)], camera),
     ]
     living_collectibles = [
-        Collectible(random_position((1500,900)), images["ps3_img"], camera)
+        Collectible(random_position((1500,900)), images[random.choice(collect_images)], camera)
     ]
     hallwayC_collectibles = [
-        Collectible(random_position((700,1850)), images["ps4_img"], camera),
+        Collectible(random_position((700,1850)), images[random.choice(collect_images)], camera),
     ]
     library_collectibles = [
-        Collectible(random_position((1500,900)), images["ps5_img"], camera)
+        Collectible(random_position((1500,900)), images[random.choice(collect_images)], camera)
     ]
     lower_hallway_collectibles = [
-        Collectible(random_position((3600,700)), images["ps3_img"], camera),
-        Collectible(random_position((3600,700)), images["ps4_img"], camera)
+        Collectible(random_position((3600,700)), images[random.choice(collect_images)], camera),
+        Collectible(random_position((3600,700)), images[random.choice(collect_images)], camera)
     ]
     game_collectibles = [
-        Collectible(random_position((1500,900)), images["ps1_img"], camera)
+        Collectible(random_position((1500,900)), images[random.choice(collect_images)], camera),
+        Collectible(random_position((1500,900)), images[random.choice(collect_images)], camera)
     ]
     lower_great_collectibles = [
-        Collectible(random_position((1500,900)), images["ps2_img"], camera)
+        Collectible(random_position((1500,1250)), images[random.choice(collect_images)], camera),
+        Collectible(random_position((1500,1250)), images[random.choice(collect_images)], camera)
     ]
     ballroom_collectibles = [
-        Collectible(random_position((1500,1000)), images["ps5_img"], camera)
+        Collectible(random_position((1500,1000)), images[random.choice(collect_images)], camera),
+        Collectible(random_position((1500,1000)), images[random.choice(collect_images)], camera)
     ]
     upper_great_collectibles = [
-        Collectible(random_position((1500,900)), images["ps2_img"], camera)
+        Collectible(random_position((1500,1250)), images[random.choice(collect_images)], camera),
+        Collectible(random_position((1500,1250)), images[random.choice(collect_images)], camera)
     ]
     hallwayD_collectibles = [
-        Collectible(random_position((3600,700)), images["ps4_img"], camera),
+        Collectible(random_position((3600,700)), images[random.choice(collect_images)], camera),
+        Collectible(random_position((3600,700)), images[random.choice(collect_images)], camera)
     ]
     matilda_bed_collectibles = [
-        Collectible(random_position((1500,1000)), images["ps5_img"], camera)
+        Collectible(random_position((1500,1000)), images[random.choice(collect_images)], camera)
     ]
     alfred_bed_collectibles = [
-        Collectible(random_position((1500,1000)), images["ps4_img"], camera)
+        Collectible(random_position((1500,1000)), images[random.choice(collect_images)], camera)
     ]
     
     guest3_collectibles = [
-        Collectible(random_position((1500,1000)), images["ps3_img"], camera)
+        Collectible(random_position((1500,1000)), images[random.choice(collect_images)], camera)
     ]
     
     guest1_collectibles = [
-        Collectible(random_position((1500,1000)), images["ps1_img"], camera)
+        Collectible(random_position((1500,1000)), images[random.choice(collect_images)], camera)
     ]
     
     guest2_collectibles = [
-        Collectible(random_position((1500,1000)), images["ps2_img"], camera)
+        Collectible(random_position((1500,1000)), images[random.choice(collect_images)], camera)
     ]
     
     hallwayE_collectibles = [
-        Collectible(random_position((1896,700)), images["ps2_img"], camera),
+        Collectible(random_position((1896,700)), images[random.choice(collect_images)], camera),
+        Collectible(random_position((1896,700)), images[random.choice(collect_images)], camera)
     ]
     
     guest4_collectibles = [
-        Collectible(random_position((1500,1000)), images["ps4_img"], camera)
+        Collectible(random_position((1500,1000)), images[random.choice(collect_images)], camera)
     ]
     
     frances_collectibles = [
-        Collectible(random_position((1500,1000)), images["ps5_img"], camera)
+        Collectible(random_position((1500,1000)), images[random.choice(collect_images)], camera)
     ]
     
     hallwayF1_collectibles = [
-        Collectible(random_position((1909,700)), images["ps1_img"], camera)
+        Collectible(random_position((1909,700)), images[random.choice(collect_images)], camera)
     ]
     
     hallwayF2_collectibles = [
-        Collectible(random_position((1500,1802)), images["ps2_img"], camera)
+        Collectible(random_position((1000,1201)), images[random.choice(collect_images)], camera)
     ]
     
     guest5_collectibles = [
-        Collectible(random_position((1500,1000)), images["ps5_img"], camera)
+        Collectible(random_position((1500,1000)), images[random.choice(collect_images)], camera)
     ]
     
     hallwayF3_collectibles = [
-        Collectible(random_position((1896,700)), images["ps3_img"], camera)
+        Collectible(random_position((1896,700)), images[random.choice(collect_images)], camera)
     ]
     
     dan_collectibles = [
-        Collectible(random_position((1500,1000)), images["ps4_img"], camera)
+        Collectible(random_position((1500,1000)), images[random.choice(collect_images)], camera)
     ]
     
     # Collectibles dictionary

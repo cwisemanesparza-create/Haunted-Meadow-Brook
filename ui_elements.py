@@ -25,6 +25,12 @@ class UIElement(Sprite):
     def __init__(self, center_position, text, font_size, bg_rgb, text_rgb, action=None):
         super().__init__()
         self.action = action
+        self.text = text
+        self.font_size = font_size
+        self.bg_rgb = bg_rgb
+        self.text_rgb = text_rgb
+        self.center_position = center_position
+        self.render_text()
         self.mouse_over = False
 
         self.images = [
@@ -36,6 +42,17 @@ class UIElement(Sprite):
             self.images[0].get_rect(center=center_position),
             self.images[1].get_rect(center=center_position)
         ]
+        
+    def render_text(self):
+        self.images = [
+            create_surface_with_text(self.text, self.font_size, self.text_rgb, self.bg_rgb),
+            create_surface_with_text(self.text, int(self.font_size * 1.15), self.text_rgb, self.bg_rgb)
+        ]
+        self.rects = [img.get_rect(center=self.center_position) for img in self.images]
+    
+    def set_text(self, text):
+        self.text = text
+        self.render_text()
 
     @property
     def image(self):

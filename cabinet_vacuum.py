@@ -39,6 +39,13 @@ def create_key_surface():
     pygame.draw.circle(surface, dark_gold, (15, 16), 11, 2)
     return surface.convert_alpha()
 
+def load_key_surface():
+    try:
+        image = pygame.image.load(KEY_IMAGE_PATH).convert_alpha()
+        return pygame.transform.smoothscale(image, KEY_DRAW_SIZE)
+    except (pygame.error, FileNotFoundError):
+        return create_key_surface()
+
 def create_vacuum_surface():
     surface = pygame.Surface((72, 38), pygame.SRCALPHA)
     blue = (42, 135, 220)
@@ -60,19 +67,28 @@ def load_vacuum_surface():
     try:
         image = pygame.image.load(path).convert_alpha()
         return pygame.transform.smoothscale(image, VACUUM_DRAW_SIZE)
-    except pygame.error:
+    except (pygame.error, FileNotFoundError):
         return pygame.transform.smoothscale(create_vacuum_surface(), VACUUM_DRAW_SIZE)
 
-def load_opened_cabinet_surface():
-    path = "photos/grizzly_photos/weapon and cabinet/cabinet vacuum.png"
+def load_locked_cabinet_surface():
     try:
-        image = pygame.image.load(path).convert_alpha()
-        return pygame.transform.smoothscale(image, (92, 122))
-    except pygame.error:
+        image = pygame.image.load(LOCKED_CABINET_IMAGE_PATH).convert_alpha()
+        return pygame.transform.smoothscale(image, CABINET_DRAW_SIZE)
+    except (pygame.error, FileNotFoundError):
+        return create_cabinet_surface(False, False)
+
+def load_empty_cabinet_surface():
+    try:
+        image = pygame.image.load(EMPTY_CABINET_IMAGE_PATH).convert_alpha()
+        return pygame.transform.smoothscale(image, CABINET_DRAW_SIZE)
+    except (pygame.error, FileNotFoundError):
         return create_cabinet_surface(True, True)
+
+def load_opened_cabinet_surface():
+    return load_empty_cabinet_surface()
     
 def create_cabinet_surface(unlocked=False, opened=False):
-    surface = pygame.Surface((92, 122), pygame.SRCALPHA)
+    surface = pygame.Surface(CABINET_DRAW_SIZE, pygame.SRCALPHA)
     wood = (92, 55, 32)
     wood_light = (125, 78, 45)
     wood_dark = (45, 28, 20)

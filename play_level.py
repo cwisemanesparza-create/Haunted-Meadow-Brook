@@ -215,7 +215,7 @@ def play_level(screen):
     
     # Collected Items tracker
     collected_items_tracker = UIElement(
-        center_position=(250, 30),
+        center_position=(260, 30),
         text=("Collected Items: " + str(collected_items)),
         font_size=20,
         bg_rgb=BLACK,
@@ -224,7 +224,7 @@ def play_level(screen):
     
     # Rooms Explored tracker
     rooms_explored_tracker = UIElement(
-        center_position=(475, 30),
+        center_position=(490, 30),
         text=("Rooms Explored: " + str(rooms_explored)),
         font_size=20,
         bg_rgb=BLACK,
@@ -233,7 +233,7 @@ def play_level(screen):
     
     # Ghosts Caught tracker
     ghosts_caught_tracker = UIElement(
-        center_position=(700, 30),
+        center_position=(715, 30),
         text=("Ghosts Caught: " + str(ghosts_caught)),
         font_size=20,
         bg_rgb=BLACK,
@@ -242,7 +242,7 @@ def play_level(screen):
     
     # Ghosts Remaining tracker
     ghosts_remaining_tracker = UIElement(
-        center_position=(925, 30),
+        center_position=(950, 30),
         text=("Ghosts remaining: " + str(ghosts_remaining)),
         font_size=20,
         bg_rgb=BLACK,
@@ -251,7 +251,7 @@ def play_level(screen):
     
     # Press u to upgrade
     press_u = UIElement(
-        center_position=(1175, 30),
+        center_position=(1200, 30),
         text=("Press 'u' to upgrade"),
         font_size=20,
         bg_rgb=BLACK,

@@ -242,6 +242,15 @@ def play_level(screen):
         text_rgb=WHITE
     )
     
+    # Press u to upgrade
+    press_u = UIElement(
+        center_position=(1175, 30),
+        text=("Press 'u' to upgrade"),
+        font_size=20,
+        bg_rgb=BLACK,
+        text_rgb=WHITE
+    )
+    
     # Buttons after Player Death
     retry_btn = UIElement((current_room.viewport[0]//2, current_room.viewport[1]//2 + 120), 
                           "Retry", 30, BLACK, WHITE, GameState.START)
@@ -621,5 +630,6 @@ def play_level(screen):
         rooms_explored_tracker.draw(screen)
         ghosts_caught_tracker.draw(screen)
         ghosts_remaining_tracker.draw(screen)
+        press_u.draw(screen)
         pause_button.draw(screen)
         pygame.display.flip()

@@ -11,7 +11,6 @@ colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255)]
 background_img = pygame.image.load(f"photos/win_screen_photos/bear_celebration_1.png",).convert()
 background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
 
-
 class Confetti():
     def __init__(self):
         self.x = random.randint(0, WIDTH)

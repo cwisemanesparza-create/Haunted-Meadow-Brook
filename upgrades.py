@@ -91,7 +91,7 @@ def buy_upgrade(upgrade_name, player, collected_items):
         return collected_items
 
     if collected_items >= upgrade["cost"]:
-        collected_items -= upgrade["cost"]
+        #collected_items -= upgrade["cost"]
         upgrade["purchased"] = True
 
         # Apply effect

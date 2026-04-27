@@ -27,6 +27,7 @@ from room import *
 from rooms_detailed import *
 
 from cabinet_vacuum import*
+from confetti import *
 from upgrades import *
 
 # Note: run main.py file to open game, play_level is the game after menu
@@ -103,7 +104,7 @@ def play_level(screen):
         "long_roar.mp3",
         "quick_roar.mp3",
         "Rat.mp3",
-        "Short_bear_growl.mp3"
+        "Short_bear_growl.mp3",
     ]
     
     for file in sound_files:
@@ -247,6 +248,12 @@ def play_level(screen):
     menu_btn = UIElement((current_room.viewport[0]//2, current_room.viewport[1]//2 + 190), 
                          "Main Menu", 30, BLACK, WHITE, GameState.MENU)
     
+    # Buttons after End Game
+    quit_btn = UIElement((current_room.viewport[0]//2, current_room.viewport[1]//2 + 200), 
+                          "Quit", 30, BLACK, WHITE, GameState.QUIT)
+    menu_btn = UIElement((current_room.viewport[0]//2, current_room.viewport[1]//2 + 270), 
+                         "Main Menu", 30, BLACK, WHITE, GameState.MENU)
+    
     while True:
         dt = clock.tick(60)
         mouse_up = False
@@ -357,7 +364,17 @@ def play_level(screen):
                     settings(screen, current_room.viewport[0], current_room.viewport[1], GameState.START)
                 elif menu_action == "QUIT":
                     mouse_up = False
-                    menu(screen, GameState.START)
+                    selected_state = menu(screen, GameState.START)
+                    if selected_state == GameState.START:
+                        paused = False
+                    elif selected_state == GameState.MENU:
+                        return GameState.MENU
+                    elif selected_state == GameState.SETTINGS:
+                        settings(screen, current_room.viewport[0], current_room.viewport[1], GameState.START)
+                    elif selected_state == GameState.ABOUT:
+                        about(screen, game_state=GameState.START)
+                    elif selected_state == GameState.ACHIEVEMENTS:
+                        achievements(screen, game_state=GameState.START)
             
         else:
             keys = pygame.key.get_pressed()
@@ -532,6 +549,58 @@ def play_level(screen):
             if rooms_explored >= 28:
                 achievements_data[3]["unlocked"] = True
                 
+            # Confetti End Game
+            if ghosts_caught >= 25 and collected_items >= 28: 
+                background_img = pygame.image.load(f"photos/win_screen_photos/bear_celebration_1.png",).convert()
+                background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
+                
+                # Create confetti
+                confetti_list = [Confetti() for _ in range(100)]
+
+                running = True
+                while running:
+                    mouse_up = False
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            running = False
+                        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                            mouse_up = True
+                            
+                    screen.blit(background_img, (0, 0))
+                    
+                    for piece in confetti_list:
+                        piece.update()
+                        piece.draw()
+                    
+                    w, h = screen.get_size()
+
+                    quit_btn.rects[0].center = (w//2, h//2 + 200)
+                    quit_btn.rects[1].center = (w//2, h//2 + 200)
+
+                    menu_btn.rects[0].center = (w//2, h//2 + 270)
+                    menu_btn.rects[1].center = (w//2, h//2 + 270)
+
+                    action = quit_btn.update(pygame.mouse.get_pos(), mouse_up)
+                    quit_btn.draw(screen)
+
+                    action2 = menu_btn.update(pygame.mouse.get_pos(), mouse_up)
+                    menu_btn.draw(screen)
+
+                    if action == GameState.QUIT:
+                        pygame.quit()
+                        return
+                    
+                    elif action2 == GameState.MENU:
+                        state = menu(screen, game_state = GameState.MENU)
+                        return state
+                        
+                    pygame.display.flip()
+                    clock.tick(60)
+
+                pygame.quit()
+                    
+                pygame.display.update()
+                continue   
             
             # Update floating text
             for ft in floating_texts[:]:

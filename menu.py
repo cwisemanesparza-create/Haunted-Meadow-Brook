@@ -10,7 +10,6 @@ from random import randint
 from ui_elements import *
 from global_variables import *
 from game_state import *
-from main import *
 
 # Menu screen
 def menu(screen, game_state):

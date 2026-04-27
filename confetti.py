@@ -3,7 +3,7 @@ import random
 
 # Initialize
 pygame.init()
-WIDTH, HEIGHT = 1500, 670
+WIDTH, HEIGHT = 1500, 700
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255)]
@@ -12,7 +12,7 @@ background_img = pygame.image.load(f"photos/win_screen_photos/bear_celebration_1
 background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
 
 
-class Confetti:
+class Confetti():
     def __init__(self):
         self.x = random.randint(0, WIDTH)
         self.y = random.randint(-HEIGHT, 0)
@@ -28,23 +28,3 @@ class Confetti:
 
     def draw(self):
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
-
-# Create confetti
-confetti_list = [Confetti() for _ in range(100)]
-
-# Game loop
-running = True
-while running:
-    screen.blit(background_img, (0, 0))
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    
-    for piece in confetti_list:
-        piece.update()
-        piece.draw()
-        
-    pygame.display.flip()
-    clock.tick(60)
-
-pygame.quit()

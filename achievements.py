@@ -5,7 +5,6 @@ from pygame.rect import Rect
 from ui_elements import *
 from global_variables import *
 from game_state import *
-from main import *
 
 # Achievements data, change to true when unlocked 
 achievements_data = [

@@ -158,8 +158,15 @@ def play_level(screen):
     ghost_img = pygame.image.load("photos\\grizzly_photos\\grizzly_ghost.png").convert_alpha()
     ghost_img = pygame.transform.scale(ghost_img, (GHOST_SIZE))
     
+    ghost_death_frames = []
+    
     # Create ghosts with ghost image and camera
-    ghosts = ghosts_detailed(ghost_img, camera_group)
+    ghosts = ghosts_detailed(ghost_img, camera_group, ghost_death_frames)
+    
+    for i in range(1, 26):
+        path = f"photos/ghost death/Ghost Death Animation (Move toward player as it plays if time){i}.png"
+        image = pygame.image.load(path).convert_alpha()
+        ghost_death_frames.append(image)
     
     # Create rooms with ghosts and collectibles
     rooms = rooms_detailed(ghosts, collectibles)

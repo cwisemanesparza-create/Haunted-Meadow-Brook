@@ -12,7 +12,7 @@ from global_variables import *
 from ghost import Ghost
 
 # Ghosts Detailed function
-def ghosts_detailed(ghost_img, camera):
+def ghosts_detailed(ghost_img, camera, ghost_death_frames):
     
     # Create separate ghosts for each room
     hallwayA_ghost_room = pygame.Rect(0, 0, 3600, 700)
@@ -21,7 +21,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(1800, 600),
             room_rect=hallwayA_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames
         )
     ]
     
@@ -31,7 +32,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(750, 300),
             room_rect=dining_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames
         )
     ]
     
@@ -41,7 +43,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(750, 300),
             room_rect=alfredstudy_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames
         )
     ]
     
@@ -51,7 +54,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(750, 300),
             room_rect=matildastudy_ghost_room,
             image=ghost_img,
-            group=camera
+            group=camera,
+            death_frames=ghost_death_frames
         )
     ]
     
@@ -71,13 +75,15 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(1200, 300),
             room_rect=living_ghost_room,
             image=ghost_img,
-            group=camera  
+            group=camera,
+            death_frames=ghost_death_frames  
         ),
         Ghost(
             start_pos=(850, 200),
             room_rect=living_ghost_room,
             image=ghost_img,
-            group=camera  
+            group=camera,
+            death_frames=ghost_death_frames  
         )
     ]
     
@@ -87,7 +93,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(575, 925),
             room_rect=hallwayC_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames
         )
     ]
     
@@ -97,7 +104,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(1350, 850),
             room_rect=library_ghost_room,
             image=ghost_img,
-            group=camera  
+            group=camera,
+            death_frames=ghost_death_frames  
         )
     ]
     
@@ -107,7 +115,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(2600, 100),
             room_rect=lowerhallway_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     
@@ -117,13 +126,15 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(300, 300),
             room_rect=game_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         ),
         Ghost(
             start_pos=(1200, 300),
             room_rect=game_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     
@@ -133,13 +144,15 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(850, 300),
             room_rect=lowergreat_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         ),
         Ghost(
             start_pos=(1200, 450),
             room_rect=lowergreat_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     
@@ -149,13 +162,15 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(1200, 750),
             room_rect=ball_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         ),
         Ghost(
             start_pos=(300, 750),
             room_rect=ball_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     
@@ -175,7 +190,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(750, 300),
             room_rect=matilda_bed_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     
@@ -185,7 +201,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(750, 300),
             room_rect=alfred_bed_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames
         )
     ]
     
@@ -195,7 +212,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(1100, 350),
             room_rect=guest3_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     
@@ -205,7 +223,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(1100, 350),
             room_rect=guest1_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     
@@ -215,7 +234,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(1100, 350),
             room_rect=guest2_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     
@@ -230,7 +250,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(1100, 350),
             room_rect=guest4_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames
         )
     ]
     
@@ -240,7 +261,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(1100, 350),
             room_rect=frances_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     
@@ -260,7 +282,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(1100, 350),
             room_rect=guest5_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     
@@ -270,7 +293,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(948, 100),
             room_rect=hallwayF3_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     
@@ -280,7 +304,8 @@ def ghosts_detailed(ghost_img, camera):
             start_pos=(1100, 350),
             room_rect=dan_ghost_room,
             image=ghost_img,
-            group=camera 
+            group=camera,
+            death_frames=ghost_death_frames 
         )
     ]
     

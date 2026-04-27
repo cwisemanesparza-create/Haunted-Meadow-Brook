@@ -6,7 +6,7 @@ from random import randint
 
 # Ghost AI class
 class Ghost(pygame.sprite.Sprite):
-    def __init__(self, start_pos, room_rect, image, group):
+    def __init__(self, start_pos, room_rect, image, group, death_frames=None):
         super().__init__(group)
         self.image = image
         self.original_image = image
@@ -34,6 +34,11 @@ class Ghost(pygame.sprite.Sprite):
         self.capture_timer = 0
         self.capture_duration = 350
         self.capture_target = None
+        
+        self.death_frames = []
+        self.death_index = 0
+        self.death_animation_speed = 0.4
+        self.is_dying = False
 
     def start_capture(self, player):
         if self.capture_started or self.captured:
@@ -73,6 +78,22 @@ class Ghost(pygame.sprite.Sprite):
         else:
             return
 
+        if self.is_dying:
+            self.death_index += self.death_animation_speed
+            
+            if self.death_index >= len(self.death_frames):
+                self.kill()
+                return
+            
+            self.image = self.death_frames[int(self.death_index)]
+            return
+
+        if self.capture_target:
+            direction = pygame.math.Vector2(self.capture_target.rect.center) - pygame.math.Vector2(self.rect.center)
+            if direction.length() > 0:
+                direction = direction.normalize()
+                self.rect.center += direction * 2
+                
         if self.capture_started:
             self.update_capture(dt)
             return

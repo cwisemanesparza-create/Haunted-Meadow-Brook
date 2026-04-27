@@ -190,7 +190,7 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["hallwayC_ghosts"],
         collectibles=collectibles["hallwayC_collectibles"],
-        viewport=(1500, 700),
+        viewport=(700, 700),
         respawn_pos=(350, 300)
     )
     
@@ -537,7 +537,7 @@ def rooms_detailed(ghosts, collectibles):
         },
         ghosts=ghosts["hallwayF2_ghosts"],
         collectibles=collectibles["hallwayF2_collectibles"],
-        viewport=(1500, 700),
+        viewport=(1000, 700),
     )
     
     guest_room_5 = Room(

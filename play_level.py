@@ -114,12 +114,13 @@ def play_level(screen):
     # Create rooms with ghosts and collectibles
     rooms = rooms_detailed(ghosts, collectibles)
     
-    key_surface = create_key_surface()
+    key_surface = load_key_surface()
     vacuum_img = load_vacuum_surface()
     key_item, key_room_name = spawn_key_in_random_room(rooms, camera_group, key_surface)
     cabinet_room_name = "library"
-    opened_cabinet_img = load_opened_cabinet_surface()
-    cabinet = Cabinet((720, 620), create_cabinet_surface(False, False), opened_cabinet_img)
+    locked_cabinet_img = load_locked_cabinet_surface()
+    empty_cabinet_img = load_empty_cabinet_surface()
+    cabinet = Cabinet((720, 620), locked_cabinet_img, empty_cabinet_img)
     all_room_ghosts = {room_name: room.ghosts[:] for room_name, room in rooms.items()}
     
     # Set initial current room

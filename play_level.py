@@ -283,7 +283,6 @@ def play_level(screen):
                 mouse_up = True
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 paused = not paused
-                return GameState.MENU
             if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
                 interact_pressed = True
             if event.type == pygame.KEYDOWN and event.key == pygame.K_u:
@@ -353,9 +352,13 @@ def play_level(screen):
             
         # Draw pause overlay if paused
         if paused:
+            camera_group.box_target_camera(player, current_room.size)
+            camera_group.custom_draw(player, current_room)
+            
             overlay = pygame.Surface(current_room.viewport, pygame.SRCALPHA)
-            overlay.fill(CLEAR)
+            overlay.fill((0, 0, 0, 120))
             screen.blit(overlay, (0, 0))
+            
             pause_text = create_surface_with_text("PAUSED", 48, WHITE, BLACK)
             screen.blit(
                 pause_text, 
@@ -381,20 +384,16 @@ def play_level(screen):
                     mouse_up = False
                 elif menu_action == "SETTINGS":
                     mouse_up = False
-                    settings(screen, current_room.viewport[0], current_room.viewport[1], GameState.START)
+                    new_state = settings(screen, current_room.viewport[0], current_room.viewport[1], GameState.PAUSED)
+                    
+                    if new_state == GameState.MENU:
+                        return GameState.MENU
+                    elif new_state == GameState.PAUSED:
+                        paused = True
+            
                 elif menu_action == "QUIT":
                     mouse_up = False
-                    selected_state = menu(screen, GameState.START)
-                    if selected_state == GameState.START:
-                        paused = False
-                    elif selected_state == GameState.MENU:
-                        return GameState.MENU
-                    elif selected_state == GameState.SETTINGS:
-                        settings(screen, current_room.viewport[0], current_room.viewport[1], GameState.START)
-                    elif selected_state == GameState.ABOUT:
-                        about(screen, game_state=GameState.START)
-                    elif selected_state == GameState.ACHIEVEMENTS:
-                        achievements(screen, game_state=GameState.START)
+                    return GameState.MENU
             
         else:
             keys = pygame.key.get_pressed()
@@ -607,8 +606,7 @@ def play_level(screen):
                     menu_btn.draw(screen)
 
                     if action == GameState.QUIT:
-                        pygame.quit()
-                        return
+                        return GameState.QUIT
                     
                     elif action2 == GameState.MENU:
                         state = menu(screen, game_state = GameState.MENU)
@@ -616,8 +614,6 @@ def play_level(screen):
                         
                     pygame.display.flip()
                     clock.tick(60)
-
-                pygame.quit()
                     
                 pygame.display.update()
                 continue   

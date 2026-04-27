@@ -11,4 +11,5 @@ class GameState(Enum):
     SETTINGS = 2
     ACHIEVEMENTS = 3
     ABOUT = 4
+    PAUSED = 5
     QUIT = -1

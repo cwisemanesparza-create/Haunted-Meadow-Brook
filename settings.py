@@ -4,6 +4,7 @@ from pygame.rect import Rect
 from ui_elements import *
 from global_variables import *
 from game_state import *
+from main import *
 
 # Settings screen
 def settings(screen, width, height, game_state):

@@ -5,6 +5,7 @@ from pygame.rect import Rect
 from ui_elements import *
 from global_variables import *
 from game_state import *
+from main import *
 
 # Achievements data, change to true when unlocked 
 achievements_data = [
@@ -71,7 +72,7 @@ def load_achievement_images():
                 ach["surf"] = surf
 
 # Achievements screen
-def achievements(screen):
+def achievements(screen, game_state):
     global achievements_data
     clock = pygame.time.Clock()
 
@@ -87,8 +88,8 @@ def achievements(screen):
     header_font = pygame.font.Font(None, 36)
     header_surface = header_font.render("ACHIEVEMENTS", True, WHITE)
     header_rect = pygame.Rect(0, 45, screen.get_width(), 60)
-
-    back_btn = UIElement((screen.get_width() // 2, screen.get_height() - 80), "Back", 28, BLACK, WHITE, GameState.MENU)
+    
+    back_btn = UIElement((screen.get_width() // 2, screen.get_height() - 80), "Back", 28, BLACK, WHITE, game_state)
 
     font_title = pygame.font.Font(None, 22)
     font_desc = pygame.font.Font(None, 20)
@@ -197,8 +198,13 @@ def achievements(screen):
 
         action = back_btn.update(mouse_pos, mouse_up)
         back_btn.draw(screen)
-        if action == GameState.MENU:
-            return GameState.MENU
+        
+        if action == game_state:
+            if game_state == GameState.START:
+                screen.fill(ORANGE) # background color when return to pause screen
+                return game_state
+            else:
+                return game_state
 
         pygame.display.flip()
         clock.tick(60)

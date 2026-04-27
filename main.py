@@ -35,7 +35,7 @@ def main():
 
     while True:
         if state == GameState.MENU:
-            state = menu(screen)
+            state = menu(screen, game_state = GameState.MENU)
         elif state == GameState.START:
             state = play_level(screen)
         elif state == GameState.SETTINGS:
@@ -43,9 +43,9 @@ def main():
             state = settings(screen, MENU_WIDTH, MENU_HEIGHT, game_state = GameState.MENU)
         elif state == GameState.ACHIEVEMENTS:
             load_achievement_images() # <-- load images first
-            state = achievements(screen)
+            state = achievements(screen, game_state = GameState.MENU)
         elif state == GameState.ABOUT:
-            state = about(screen)
+            state = about(screen, game_state = GameState.MENU)
         elif state == GameState.QUIT:
             pygame.quit()
             return

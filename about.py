@@ -4,9 +4,10 @@ from pygame.rect import Rect
 from ui_elements import *
 from global_variables import *
 from game_state import *
+from main import *
 
 # About screen
-def about(screen):
+def about(screen, game_state):
     try:
         background_img = pygame.image.load("photos/background.png").convert()
         background_img = pygame.transform.scale(background_img, screen.get_size())
@@ -20,9 +21,9 @@ def about(screen):
     header_font = pygame.font.Font(None, 36)
     header_surface = header_font.render("About Haunted Meadow Brook", True, WHITE)
     header_rect = pygame.Rect(200, 50, 400, 60)
-
-    back_btn = UIElement((400, 500), "Back", 28, BLACK, WHITE, GameState.MENU)
-
+    
+    back_btn = UIElement((screen.get_width() // 2, screen.get_height() - 80), "Back", 28, BLACK, WHITE, game_state)
+    
     # About text content
     about_text = (
         "Haunted Meadow Brook is a thrilling exploration and horror game set in the mysterious mansion of Oakland University. "
@@ -108,5 +109,13 @@ def about(screen):
         
         action = back_btn.update(pygame.mouse.get_pos(), mouse_up)
         back_btn.draw(screen)
-        if action == GameState.MENU:
-            return GameState.MENU
+
+        if action == game_state:
+            if game_state == GameState.START:
+                screen.fill(ORANGE) # background color when return to pause screen
+                return game_state
+            else:
+                return game_state
+            
+            
+           

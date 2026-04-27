@@ -27,6 +27,7 @@ from room import *
 from rooms_detailed import *
 
 from cabinet_vacuum import*
+from upgrades import *
 
 # Note: run main.py file to open game, play_level is the game after menu
 
@@ -59,15 +60,17 @@ def play_level(screen):
     global current_direction, current_frame, frame_timer
     global walk_timer, walk_offset
     global door_sound
-    global collected_items, ghosts_caught
+    global Score, collected_items, ghosts_caught
 
     paused = False
     clock = pygame.time.Clock()
     
     collected_items = 0
     ghosts_caught = 0
-    #ghosts_remaining = 25
-    #rooms_explored = 1
+    ghosts_remaining = 25
+    
+    visited_rooms = {"main_great_hall"}
+    rooms_explored = 1
     
     floating_texts = []
     rooms = {}
@@ -84,6 +87,39 @@ def play_level(screen):
     # Load door sound
     door_sound = pygame.mixer.Sound("Sounds/door1.mp3")
     door_sound.set_volume(random.uniform(0.3, 0.6))
+    
+    # FIXED PATHING
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    sound_folder = os.path.join(BASE_DIR, "Sounds")
+    
+    ambient_sounds = []
+
+    sound_files = [
+        "Creaking_Floorboards.mp3",
+        "Damage.mp3",
+        "Ghost_Sound.mp3",
+        "Item_Get.mp3",
+        "Long_bear_growl.mp3",
+        "long_roar.mp3",
+        "quick_roar.mp3",
+        "Rat.mp3",
+        "Short_bear_growl.mp3"
+    ]
+    
+    for file in sound_files:
+        path = os.path.join(sound_folder, file)
+
+        if not os.path.isfile(path):
+            print("Missing:", path)
+        else:
+            #print("Loaded:", path)
+            sound = pygame.mixer.Sound(path)
+            sound.set_volume(0.5)
+            ambient_sounds.append(sound)
+            
+    # TEST SOUND (you should hear this instantly)
+        #if ambient_sounds:
+            #ambient_sounds[0].play()
     
     # Load animations from animation images
     animations = animation_images(load_scaled)
@@ -138,7 +174,6 @@ def play_level(screen):
     
     # Set initial current room
     current_room = rooms["main_great_hall"]
-    list_names_rooms = ["main_great_hall"]
     
     # Create player
     player = Player(
@@ -179,10 +214,28 @@ def play_level(screen):
         text_rgb=WHITE
     )
     
+    # Rooms Explored tracker
+    rooms_explored_tracker = UIElement(
+        center_position=(475, 30),
+        text=("Rooms Explored: " + str(rooms_explored)),
+        font_size=20,
+        bg_rgb=BLACK,
+        text_rgb=WHITE
+    )
+    
     # Ghosts Caught tracker
     ghosts_caught_tracker = UIElement(
-        center_position=(475, 30),
+        center_position=(700, 30),
         text=("Ghosts Caught: " + str(ghosts_caught)),
+        font_size=20,
+        bg_rgb=BLACK,
+        text_rgb=WHITE
+    )
+    
+    # Ghosts Remaining tracker
+    ghosts_remaining_tracker = UIElement(
+        center_position=(925, 30),
+        text=("Ghosts remaining: " + str(ghosts_remaining)),
         font_size=20,
         bg_rgb=BLACK,
         text_rgb=WHITE
@@ -214,6 +267,7 @@ def play_level(screen):
                 capture_pressed = True
         
         if player.dead:
+            ambient_sounds[4].play()
             player.death_frame_timer += dt
             
             if not player.death_finished:
@@ -302,7 +356,8 @@ def play_level(screen):
                     mouse_up = False
                     settings(screen, current_room.viewport[0], current_room.viewport[1], GameState.START)
                 elif menu_action == "QUIT":
-                    return GameState.MENU
+                    mouse_up = False
+                    menu(screen, GameState.START)
             
         else:
             keys = pygame.key.get_pressed()
@@ -349,13 +404,20 @@ def play_level(screen):
             player.image = animations[current_direction][current_frame]
             for ghost in current_room.ghosts[:]:
                 ghost.update(dt, player)
-                if ghost.captured:
+                if ghost.state == "chase" and not player.dead:
+                    ambient_sounds[2].play()
+                    if player.death_finished:
+                        ambient_sounds[2].play()
+                elif ghost.captured:
                     current_room.ghosts.remove(ghost)
                     ghost.kill()
+                    ambient_sounds[6].play()
                     increase_score100()
                     score_tracker.set_text("Score: " + str(Score))
                     ghosts_caught += 1
                     ghosts_caught_tracker.set_text("Ghosts Caught: " + str(ghosts_caught))
+                    ghosts_remaining -= 1
+                    ghosts_remaining_tracker.set_text("Ghosts Remaining: " + str(ghosts_remaining))
                     floating_texts.append(
                         FloatingText(
                             "Ghost captured!",
@@ -382,6 +444,7 @@ def play_level(screen):
                         )
                     else:
                         cabinet.open()
+                        ambient_sounds[0].play()
                         player.has_vacuum = True
                         floating_texts.append(
                             FloatingText(
@@ -407,8 +470,12 @@ def play_level(screen):
             door_hit = current_room.get_door_at(player.rect)
             if door_hit:
                 door_sound.play()  # play door sound
+                target_room = door_hit["target_room"]
+                if target_room not in visited_rooms:
+                    visited_rooms.add(target_room)
+                    rooms_explored += 1
+                    rooms_explored_tracker.set_text("Rooms Explored: " + str(rooms_explored))
                 current_room = enter_room(player, pause_button, camera_group, rooms[door_hit['target_room']], door_hit['spawn_pos'])
-                #rooms_explored += 1
                 
             camera_group.box_target_camera(player, current_room.size)
             camera_group.custom_draw(player, current_room)
@@ -436,6 +503,7 @@ def play_level(screen):
             for item in current_room.collectibles[:]:
                 if player.rect.colliderect(item.rect):
                     item.collect()
+                    ambient_sounds[3].play()
                     current_room.collectibles.remove(item)
                     if getattr(item, "is_key", False):
                         player.has_key = True
@@ -457,6 +525,13 @@ def play_level(screen):
                 
             if ghosts_caught >= 1:
                 achievements_data[4]["unlocked"] = True
+                
+            if ghosts_remaining <= 0:
+                achievements_data[5]["unlocked"] = True
+            
+            if rooms_explored >= 28:
+                achievements_data[3]["unlocked"] = True
+                
             
             # Update floating text
             for ft in floating_texts[:]:
@@ -468,12 +543,10 @@ def play_level(screen):
             for ft in floating_texts:
                 ft.draw(screen)
         
-        #score_tracker.set_text("Score: " + str(Score))
-        #collected_items_tracker.set_text("Collected Items: " + str(collected_items))
-        #ghosts_caught_tracker.set_text("Ghosts Caught: " + str(ghosts_caught))
-        
         score_tracker.draw(screen)
         collected_items_tracker.draw(screen)
+        rooms_explored_tracker.draw(screen)
         ghosts_caught_tracker.draw(screen)
+        ghosts_remaining_tracker.draw(screen)
         pause_button.draw(screen)
         pygame.display.flip()

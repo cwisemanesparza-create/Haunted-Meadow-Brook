@@ -10,9 +10,10 @@ from random import randint
 from ui_elements import *
 from global_variables import *
 from game_state import *
+from main import *
 
 # Menu screen
-def menu(screen):
+def menu(screen, game_state):
     screen = pygame.display.set_mode(MENU_SIZE)
     
     # Load menu background
@@ -51,7 +52,14 @@ def menu(screen):
             action = button.update(pygame.mouse.get_pos(), mouse_up)
             button.draw(screen)
             if action:
-                return action
+                if game_state == GameState.START:
+                    if action == GameState.START:
+                        screen.fill(ORANGE) # background color when return to pause screen
+                        return game_state
+                    else:
+                        return action
+                else:
+                    return action
         
         pygame.display.flip()
         clock.tick(60)

@@ -270,6 +270,10 @@ def play_level(screen):
                 return GameState.MENU
             if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
                 interact_pressed = True
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_u:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_u:
+                    collected_items = open_upgrade_menu(screen, player, collected_items)
+                    collected_items_tracker.set_text("Collected Items: " + str(collected_items))
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 capture_pressed = True
         

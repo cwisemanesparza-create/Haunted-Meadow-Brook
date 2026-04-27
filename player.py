@@ -23,7 +23,14 @@ class Player(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_rect(center = pos)
         self.direction = pygame.math.Vector2()
+        
         self.speed = SPEED
+        self.extra_hits = 0
+        self.slow_aura = False
+        
+        self.can_dash = False
+        self.dash_speed = 20
+        self.dash_cooldown = 0
         
         self.dead = False
         self.death_frame = 0
@@ -51,12 +58,22 @@ class Player(pygame.sprite.Sprite):
             self.direction.y = -1
         elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
             self.direction.y = 1
+            
+        # Dash
+        if self.can_dash and keys[pygame.K_LSHIFT] and self.dash_cooldown <= 0:
+            self.rect.center += self.direction * self.dash_speed
+            self.dash_cooldown = 30
     
     def update(self, *args):
         if (self.dead):
             return
+        
+        if self.dash_cooldown > 0:
+            self.dash_cooldown -= 1
+            
         self.input()
         self.rect.center += self.direction * self.speed
+        
     def reset(self, pos):
         self.rect.center = pos
         self.dead = False

@@ -96,7 +96,7 @@ def buy_upgrade(upgrade_name, player, collected_items):
 
         # Apply effect
         if upgrade_name == "speed":
-            player.speed += 0.5
+            player.speed += 1.5
         elif upgrade_name == "slow_aura":
             player.slow_aura = True
         elif upgrade_name == "shield":

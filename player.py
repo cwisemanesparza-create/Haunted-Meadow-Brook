@@ -29,7 +29,7 @@ class Player(pygame.sprite.Sprite):
         self.slow_aura = False
         
         self.can_dash = False
-        self.dash_speed = 20
+        self.dash_speed = 25
         self.dash_cooldown = 0
         
         self.dead = False
